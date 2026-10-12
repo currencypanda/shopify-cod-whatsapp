@@ -1,0 +1,39 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "4fcb316262573e0f882e29d1d8013cb0"
+name = "cod-whatsapp-verify"
+application_url = "https://example.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+include_config_on_deploy = true
+
+[webhooks]
+api_version = "2027-01"
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/scopes_update"
+  topics = [ "app/scopes_update" ]
+
+  [[webhooks.subscriptions]]
+  uri = "/webhooks/app/uninstalled"
+  topics = [ "app/uninstalled" ]
+
+  # Programmatically registered in app/shopify.server.ts (afterAuth hook)
+  # to bypass Protected Customer Data CLI checks before app submission/approval:
+  # [[webhooks.subscriptions]]
+  # uri = "/webhooks/app/orders/create"
+  # topics = [ "orders/create" ]
+
+  [webhooks.privacy_compliance]
+  customer_data_request_url = "/webhooks/customers/data_request"
+  customer_redact_url = "/webhooks/customers/redact"
+  shop_redact_url = "/webhooks/shop/redact"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "write_products,read_orders,write_orders,read_customers"
+
+[auth]
+redirect_urls = [ "https://example.com/api/auth" ]

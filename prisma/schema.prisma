@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id                  String    @id
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+// Store settings & WhatsApp configuration
+model ShopConfig {
+  id                    String   @id @default(uuid())
+  shop                  String   @unique
+  isEnabled             Boolean  @default(true)
+  whatsappPhoneNumberId String?
+  whatsappAccessToken   String?
+  whatsappTemplateName  String   @default("cod_order_verification")
+  autoTagConfirmed           String   @default("COD-Confirmed")
+  autoTagCancelled           String   @default("COD-Cancelled")
+  defaultCountryCode         String   @default("92")
+  rtoCostEstimate            Float    @default(450.0)
+  currencySymbol             String   @default("PKR")
+  autoCancelOnCustomerCancel  Boolean  @default(true)
+  autoExpiryHours            Int      @default(24)
+  autoTagExpired             String   @default("COD-Expired")
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  verifications              VerificationOrder[]
+}
+
+// Order verification records & state machine
+enum VerificationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  EXPIRED
+  FAILED
+}
+
+model VerificationOrder {
+  id                String             @id @default(uuid())
+  shop              String
+  shopConfig        ShopConfig         @relation(fields: [shop], references: [shop], onDelete: Cascade)
+  shopifyOrderId    String             @unique
+  orderNumber       String
+  customerPhone     String
+  customerName      String?
+  totalAmount       Decimal
+  currency          String             @default("PKR")
+  status            VerificationStatus @default(PENDING)
+  whatsappMessageId String?
+  respondedAt       DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([shop, status])
+  @@index([whatsappMessageId])
+}
