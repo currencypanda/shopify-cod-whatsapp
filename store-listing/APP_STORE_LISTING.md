@@ -121,3 +121,6 @@ flowchart LR
 
 #### Q: Is customer data secure and compliant with privacy laws?
 **A:** Absolutely. SwiftCOD adheres strictly to GDPR, CCPA, and Shopify App Store compliance requirements. We maintain automated endpoints for Customer Data Request, Customer Redaction, and Store Redaction webhooks. Customer phone numbers are strictly used for transactional verification.
+
+#### Q: How does billing and currency conversion work?
+**A:** All plans are processed directly through Shopify's official AppSubscription API. While plans are priced in USD ($0 Free, $5.99 Launch Special, $14.99 Growth, $39.99 Scale), Shopify automatically converts charges into your store's native billing currency (PKR, INR, AED, SAR, GBP, EUR, etc.) on your regular monthly Shopify invoice. Paid plans feature a 7-day trial with automatic renewal via your Shopify payment method on file.
