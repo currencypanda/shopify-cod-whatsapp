@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#051f1a" />
+      <stop offset="50%" stop-color="#021310" />
+      <stop offset="100%" stop-color="#010a08" />
+    </linearGradient>
+    <linearGradient id="phoneBorder" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#475569" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <filter id="phoneShadow" x="-20%" y="-10%" width="140%" height="130%">
+      <feDropShadow dx="0" dy="24" stdDeviation="30" flood-color="#000000" flood-opacity="0.6" />
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1600" height="1000" fill="url(#bgGrad2)" />
+  <circle cx="450" cy="550" r="400" fill="#25D366" opacity="0.1" filter="blur(90px)" />
+  <circle cx="1200" cy="350" r="350" fill="#008060" opacity="0.12" filter="blur(80px)" />
+
+  <!-- Top Category Tag -->
+  <g transform="translate(800, 75)">
+    <rect x="-190" y="0" width="380" height="38" rx="19" fill="#008060" fill-opacity="0.25" stroke="#25D366" stroke-width="1.5" />
+    <text x="0" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="700" fill="#25D366" text-anchor="middle" letter-spacing="1">1-CLICK CONVERSION ENGINE</text>
+  </g>
+
+  <!-- Main Headline -->
+  <text x="800" y="155" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">
+    Interactive [Confirm] &amp; [Cancel] Buttons Inside WhatsApp
+  </text>
+  
+  <!-- Sub-headline -->
+  <text x="800" y="198" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="400" fill="#94a3b8" text-anchor="middle">
+    Zero customer friction. No typing, no passwords, no app downloads — verify orders in 1 second.
+  </text>
+
+  <!-- Left: Smartphone Frame -->
+  <g transform="translate(180, 240)" filter="url(#phoneShadow)">
+    <!-- Phone Outer Body -->
+    <rect width="440" height="710" rx="46" fill="#0b1319" stroke="url(#phoneBorder)" stroke-width="6" />
+    <!-- Dynamic Island / Speaker -->
+    <rect x="155" y="18" width="130" height="28" rx="14" fill="#020617" />
+    <circle cx="260" cy="32" r="5" fill="#1e293b" />
+
+    <!-- WhatsApp Screen Canvas -->
+    <rect x="14" y="58" width="412" height="638" rx="34" fill="#0b141a" />
+
+    <!-- WhatsApp Chat Header -->
+    <rect x="14" y="58" width="412" height="66" rx="34" fill="#1f2c34" />
+    <path d="M 14,92 L 14,124 L 426,124 L 426,92 Z" fill="#1f2c34" />
+    <!-- Store Avatar -->
+    <circle cx="48" cy="91" r="20" fill="#008060" />
+    <text x="48" y="97" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">SC</text>
+    <text x="78" y="88" font-family="-apple-system, sans-serif" font-size="15" font-weight="700" fill="#ffffff">Your Store Official</text>
+    <circle cx="218" cy="84" r="7" fill="#25D366" />
+    <path d="M 215,84 L 217,86 L 221,82" stroke="#ffffff" stroke-width="1.5" fill="none" />
+    <text x="78" y="104" font-family="-apple-system, sans-serif" font-size="12" fill="#8696a0">Verified Business Account</text>
+
+    <!-- Chat Wallpaper Background Pattern placeholder -->
+    <rect x="14" y="124" width="412" height="572" fill="#0b141a" />
+
+    <!-- WhatsApp Bubble -->
+    <g transform="translate(30, 145)">
+      <!-- Bubble Card Container -->
+      <rect width="380" height="390" rx="16" fill="#1f2c34" />
+      
+      <!-- Message Header -->
+      <text x="20" y="36" font-family="-apple-system, sans-serif" font-size="16" font-weight="700" fill="#25D366">
+        📦 Cash on Delivery Verification
+      </text>
+
+      <!-- Message Text -->
+      <text x="20" y="70" font-family="-apple-system, sans-serif" font-size="14" fill="#e9edef">
+        Hi Ahmed Khan, thank you for your order!
+      </text>
+      
+      <text x="20" y="100" font-family="-apple-system, sans-serif" font-size="14" fill="#8696a0">Order:</text>
+      <text x="80" y="100" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#ffffff">#1004</text>
+
+      <text x="20" y="125" font-family="-apple-system, sans-serif" font-size="14" fill="#8696a0">Items:</text>
+      <text x="80" y="125" font-family="-apple-system, sans-serif" font-size="14" fill="#e9edef">Men's Premium Cotton Polo (L)</text>
+
+      <text x="20" y="150" font-family="-apple-system, sans-serif" font-size="14" fill="#8696a0">Amount:</text>
+      <text x="80" y="150" font-family="-apple-system, sans-serif" font-size="15" font-weight="800" fill="#25D366">PKR 3,500 (COD)</text>
+
+      <text x="20" y="180" font-family="-apple-system, sans-serif" font-size="13" fill="#cbd5e1">
+        Please tap below to confirm your delivery address:
+      </text>
+
+      <text x="315" y="200" font-family="-apple-system, sans-serif" font-size="11" fill="#8696a0">14:02 ✓✓</text>
+      
+      <!-- Divider -->
+      <line x1="0" y1="210" x2="380" y2="210" stroke="#2a3942" stroke-width="1" />
+
+      <!-- Interactive Button 1: CONFIRM -->
+      <g transform="translate(16, 226)">
+        <rect width="348" height="58" rx="14" fill="#25D366" />
+        <!-- Checkmark icon -->
+        <circle cx="40" cy="29" r="14" fill="#128C7E" />
+        <path d="M 34,29 L 38,33 L 46,25" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <text x="65" y="35" font-family="-apple-system, sans-serif" font-size="16" font-weight="800" fill="#ffffff">
+          Confirm Order
+        </text>
+        <text x="325" y="35" font-family="-apple-system, sans-serif" font-size="18" fill="#ffffff">➔</text>
+      </g>
+
+      <!-- Interactive Button 2: CANCEL -->
+      <g transform="translate(16, 300)">
+        <rect width="348" height="58" rx="14" fill="#2a3942" stroke="#ef4444" stroke-width="1.5" />
+        <circle cx="40" cy="29" r="14" fill="#991b1b" />
+        <path d="M 35,24 L 45,34 M 45,24 L 35,34" stroke="#ffffff" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <text x="65" y="35" font-family="-apple-system, sans-serif" font-size="16" font-weight="700" fill="#f87171">
+          Cancel Order
+        </text>
+        <text x="325" y="35" font-family="-apple-system, sans-serif" font-size="18" fill="#f87171">✕</text>
+      </g>
+    </g>
+
+    <!-- Delivery Response Notification Bubble -->
+    <g transform="translate(30, 560)">
+      <rect width="380" height="90" rx="14" fill="#005c4b" />
+      <text x="20" y="34" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#ffffff">
+        Order Confirmed! 🎉
+      </text>
+      <text x="20" y="60" font-family="-apple-system, sans-serif" font-size="13" fill="#d1fae5">
+        Thank you Ahmed! Your order is verified and our warehouse is packing your parcel.
+      </text>
+      <text x="320" y="80" font-family="-apple-system, sans-serif" font-size="11" fill="#a7f3d0">14:03 ✓✓</text>
+    </g>
+  </g>
+
+  <!-- Right: Feature Cards & Value Props -->
+  <g transform="translate(700, 260)">
+    <!-- Big Stat Card -->
+    <rect width="720" height="150" rx="20" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.1" />
+    <text x="40" y="48" font-family="-apple-system, sans-serif" font-size="16" font-weight="700" fill="#25D366" letter-spacing="1">PROVEN SPEED &amp; ENGAGEMENT</text>
+    <text x="40" y="105" font-family="-apple-system, sans-serif" font-size="44" font-weight="800" fill="#ffffff">92% Response in &lt; 90 Seconds</text>
+    <text x="40" y="132" font-family="-apple-system, sans-serif" font-size="15" fill="#94a3b8">Customers respond instantly because WhatsApp is already on their home screen.</text>
+
+    <!-- Point 1 -->
+    <g transform="translate(0, 180)">
+      <rect width="720" height="110" rx="16" fill="#008060" fill-opacity="0.08" stroke="#008060" stroke-width="1" />
+      <circle cx="45" cy="55" r="22" fill="#008060" />
+      <text x="45" y="62" font-family="-apple-system, sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">⚡</text>
+      <text x="85" y="45" font-family="-apple-system, sans-serif" font-size="18" font-weight="700" fill="#ffffff">Zero-Typing 1-Click Action</text>
+      <text x="85" y="75" font-family="-apple-system, sans-serif" font-size="14" fill="#cbd5e1">Native quick-reply buttons eliminate manual customer typing and eliminate abandoned calls.</text>
+    </g>
+
+    <!-- Point 2 -->
+    <g transform="translate(0, 310)">
+      <rect width="720" height="110" rx="16" fill="#008060" fill-opacity="0.08" stroke="#008060" stroke-width="1" />
+      <circle cx="45" cy="55" r="22" fill="#008060" />
+      <text x="45" y="62" font-family="-apple-system, sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">🛡️</text>
+      <text x="85" y="45" font-family="-apple-system, sans-serif" font-size="18" font-weight="700" fill="#ffffff">Fake Number &amp; Impulse Order Filter</text>
+      <text x="85" y="75" font-family="-apple-system, sans-serif" font-size="14" fill="#cbd5e1">Detects unreachable or invalid numbers before expensive courier shipping labels are printed.</text>
+    </g>
+
+    <!-- Point 3 -->
+    <g transform="translate(0, 440)">
+      <rect width="720" height="110" rx="16" fill="#008060" fill-opacity="0.08" stroke="#008060" stroke-width="1" />
+      <circle cx="45" cy="55" r="22" fill="#008060" />
+      <text x="45" y="62" font-family="-apple-system, sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">🌐</text>
+      <text x="85" y="45" font-family="-apple-system, sans-serif" font-size="18" font-weight="700" fill="#ffffff">Official Meta Cloud API Infrastructure</text>
+      <text x="85" y="75" font-family="-apple-system, sans-serif" font-size="14" fill="#cbd5e1">Delivered via verified Meta Business servers with 99.9% uptime SLA and end-to-end security.</text>
+    </g>
+
+    <!-- Bottom Badge -->
+    <g transform="translate(0, 580)">
+      <rect width="720" height="70" rx="14" fill="#1e293b" />
+      <text x="360" y="42" font-family="-apple-system, sans-serif" font-size="16" font-weight="700" fill="#25D366" text-anchor="middle">
+        Supports Pakistan (Jazz/Zong/Telenor/Ufone), India, UAE, Saudi Arabia &amp; 190+ Countries
+      </text>
+    </g>
+  </g>
+</svg>

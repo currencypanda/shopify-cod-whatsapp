@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000">
+  <defs>
+    <linearGradient id="bgGrad5" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#042019" />
+      <stop offset="50%" stop-color="#021410" />
+      <stop offset="100%" stop-color="#010a08" />
+    </linearGradient>
+    <filter id="cardShadow5" x="-10%" y="-10%" width="120%" height="125%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#000000" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1600" height="1000" fill="url(#bgGrad5)" />
+  <circle cx="800" cy="500" r="500" fill="#008060" opacity="0.12" filter="blur(90px)" />
+  <circle cx="1200" cy="300" r="300" fill="#25D366" opacity="0.08" filter="blur(70px)" />
+
+  <!-- Top Category Tag -->
+  <g transform="translate(800, 75)">
+    <rect x="-190" y="0" width="380" height="38" rx="19" fill="#008060" fill-opacity="0.25" stroke="#25D366" stroke-width="1.5" />
+    <text x="0" y="24" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="15" font-weight="700" fill="#25D366" text-anchor="middle" letter-spacing="1">ZERO-CONFIG SAAS PLATFORM</text>
+  </g>
+
+  <!-- Main Headline -->
+  <text x="800" y="155" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="44" font-weight="800" fill="#ffffff" text-anchor="middle" letter-spacing="-0.5">
+    Zero-Code Setup — Connect Meta Cloud API in Under 2 Minutes
+  </text>
+  
+  <!-- Sub-headline -->
+  <text x="800" y="198" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="400" fill="#94a3b8" text-anchor="middle">
+    No Facebook Developer account or Meta API keys needed. Plug and play right from Shopify Admin.
+  </text>
+
+  <!-- Central Polaris Settings Card Mockup -->
+  <g transform="translate(180, 245)" filter="url(#cardShadow5)">
+    <rect width="1240" height="570" rx="22" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+    
+    <!-- Polaris Header -->
+    <rect width="1240" height="74" rx="22" fill="#f8fafc" />
+    <path d="M 0,22 Q 0,74 0,74 L 1240,74 Q 1240,22 1240,74 L 1240,22 Q 1240,0 1218,0 L 22,0 Q 0,0 0,22" fill="#f8fafc" />
+    <line x1="0" y1="74" x2="1240" y2="74" stroke="#e2e8f0" stroke-width="1" />
+
+    <circle cx="36" cy="37" r="6" fill="#ef4444" />
+    <circle cx="56" cy="37" r="6" fill="#f59e0b" />
+    <circle cx="76" cy="37" r="6" fill="#10b981" />
+
+    <text x="110" y="44" font-family="-apple-system, sans-serif" font-size="16" font-weight="700" fill="#0f172a">
+      Store Settings &amp; Automation Controls
+    </text>
+
+    <!-- Save Button -->
+    <rect x="1080" y="20" width="120" height="34" rx="8" fill="#008060" />
+    <text x="1140" y="42" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">
+      Save Changes
+    </text>
+
+    <!-- Setting 1: Enable Verification (Hero Toggle) -->
+    <g transform="translate(40, 110)">
+      <rect width="1160" height="95" rx="14" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" />
+      
+      <circle cx="45" cy="48" r="22" fill="#008060" />
+      <text x="45" y="55" font-family="-apple-system, sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">⚡</text>
+
+      <text x="85" y="38" font-family="-apple-system, sans-serif" font-size="18" font-weight="800" fill="#065f46">
+        Enable Automated COD Verification
+      </text>
+      <text x="85" y="65" font-family="-apple-system, sans-serif" font-size="14" fill="#047857">
+        Automatically dispatch WhatsApp confirmation messages immediately upon order creation.
+      </text>
+
+      <!-- Toggle Switch ON -->
+      <g transform="translate(1040, 30)">
+        <rect width="70" height="36" rx="18" fill="#008060" />
+        <circle cx="52" cy="18" r="14" fill="#ffffff" />
+      </g>
+    </g>
+
+    <!-- Setting 2: Auto-Cancel & Restock Toggle -->
+    <g transform="translate(40, 220)">
+      <rect width="1160" height="95" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" />
+      
+      <circle cx="45" cy="48" r="22" fill="#ef4444" />
+      <text x="45" y="55" font-family="-apple-system, sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">🔄</text>
+
+      <text x="85" y="38" font-family="-apple-system, sans-serif" font-size="17" font-weight="700" fill="#0f172a">
+        Automatically Cancel &amp; Restock Rejected Orders
+      </text>
+      <text x="85" y="65" font-family="-apple-system, sans-serif" font-size="14" fill="#64748b">
+        If customer taps [Cancel Order], mark order as cancelled in Shopify and return inventory to stock.
+      </text>
+
+      <!-- Toggle Switch ON -->
+      <g transform="translate(1040, 30)">
+        <rect width="70" height="36" rx="18" fill="#008060" />
+        <circle cx="52" cy="18" r="14" fill="#ffffff" />
+      </g>
+    </g>
+
+    <!-- Setting 3 & 4: Two Column Grid -->
+    <g transform="translate(40, 330)">
+      <!-- Left: Expiry Window -->
+      <g transform="translate(0, 0)">
+        <rect width="560" height="110" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" />
+        <text x="24" y="36" font-family="-apple-system, sans-serif" font-size="15" font-weight="700" fill="#0f172a">
+          Unattended Order Expiry Window
+        </text>
+        <text x="24" y="60" font-family="-apple-system, sans-serif" font-size="13" fill="#64748b">
+          Tag orders as COD-Expired if customer does not respond within:
+        </text>
+        <!-- Dropdown Box -->
+        <rect x="24" y="70" width="512" height="36" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" />
+        <text x="40" y="93" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#0f172a">
+          24 Hours (Recommended)
+        </text>
+        <text x="510" y="93" font-family="-apple-system, sans-serif" font-size="14" fill="#64748b">▼</text>
+      </g>
+
+      <!-- Right: Courier Return Loss Estimate -->
+      <g transform="translate(600, 0)">
+        <rect width="560" height="110" rx="14" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" />
+        <text x="24" y="36" font-family="-apple-system, sans-serif" font-size="15" font-weight="700" fill="#0f172a">
+          Average Courier Return (RTO) Cost
+        </text>
+        <text x="24" y="60" font-family="-apple-system, sans-serif" font-size="13" fill="#64748b">
+          Used to calculate your real net cash saved on the analytics dashboard:
+        </text>
+        <!-- Input Box -->
+        <rect x="24" y="70" width="512" height="36" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1" />
+        <text x="40" y="93" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#0f172a">
+          PKR 450.00 (or $5.00 USD)
+        </text>
+        <text x="480" y="93" font-family="-apple-system, sans-serif" font-size="12" fill="#94a3b8">Per Parcel</text>
+      </g>
+    </g>
+
+    <!-- Bottom Status Note -->
+    <g transform="translate(40, 470)">
+      <rect width="1160" height="60" rx="12" fill="#f1f5f9" />
+      <text x="24" y="36" font-family="-apple-system, sans-serif" font-size="14" font-weight="600" fill="#334155">
+        🔒 Security Note: Meta WhatsApp Cloud API credentials are pre-configured &amp; managed by the platform.
+      </text>
+      <text x="1000" y="36" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#008060">
+        Status: Connected ✔
+      </text>
+    </g>
+  </g>
+
+  <!-- 3 Trust Badges Footer -->
+  <g transform="translate(240, 850)">
+    <g transform="translate(0, 0)">
+      <rect width="320" height="60" rx="12" fill="#008060" fill-opacity="0.15" stroke="#25D366" stroke-width="1" />
+      <text x="160" y="36" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#25D366" text-anchor="middle">
+        Official Meta WhatsApp Cloud API
+      </text>
+    </g>
+    <g transform="translate(380, 0)">
+      <rect width="320" height="60" rx="12" fill="#008060" fill-opacity="0.15" stroke="#25D366" stroke-width="1" />
+      <text x="160" y="36" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#25D366" text-anchor="middle">
+        GDPR &amp; CCPA Compliance Certified
+      </text>
+    </g>
+    <g transform="translate(760, 0)">
+      <rect width="320" height="60" rx="12" fill="#008060" fill-opacity="0.15" stroke="#25D366" stroke-width="1" />
+      <text x="160" y="36" font-family="-apple-system, sans-serif" font-size="14" font-weight="700" fill="#25D366" text-anchor="middle">
+        99.9% Production Uptime SLA
+      </text>
+    </g>
+  </g>
+</svg>
