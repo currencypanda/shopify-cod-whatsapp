@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - SwiftCOD WhatsApp Verification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #008060;
+      --primary-dark: #004c3f;
+      --text-main: #202223;
+      --text-muted: #6d7175;
+      --bg: #f6f6f7;
+      --card-bg: #ffffff;
+      --border: #e1e3e5;
+      --accent: #25D366;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 48px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #eefbf4;
+      color: #008060;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+    .meta {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--primary-dark);
+      margin-top: 36px;
+      margin-bottom: 14px;
+      letter-spacing: -0.01em;
+    }
+    h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    p { margin-bottom: 16px; color: #374151; font-size: 0.98rem; }
+    ul { margin: 12px 0 20px 24px; color: #374151; }
+    li { margin-bottom: 8px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 0.92rem;
+    }
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .callout {
+      background: #f0fdf4;
+      border-left: 4px solid var(--accent);
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-size: 0.94rem;
+      color: #166534;
+    }
+    .footer {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    @media (max-width: 640px) {
+      .container { padding: 24px; }
+      h1 { font-size: 1.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">Official Legal Document • GDPR &amp; CCPA Compliant</div>
+    <h1>Privacy Policy</h1>
+    <div class="meta">
+      <strong>Application:</strong> SwiftCOD: WhatsApp Verify &nbsp;|&nbsp; 
+      <strong>Effective Date:</strong> January 1, 2026 &nbsp;|&nbsp; 
+      <strong>Last Updated:</strong> October 13, 2026
+    </div>
+
+    <h2>1. Introduction &amp; Overview</h2>
+    <p>SwiftCOD provides automated Cash on Delivery (COD) order verification services via the WhatsApp Cloud API for merchants operating on the Shopify platform. This Privacy Policy explains how SwiftCOD collects, processes, stores, and protects personal data when a merchant installs the Application or when a merchant's end-customer places a Cash on Delivery order.</p>
+    <p>SwiftCOD operates primarily as a <strong>Data Processor</strong> on behalf of the Shopify merchant (the <strong>Data Controller</strong>), under the provisions of the European General Data Protection Regulation (GDPR), the California Consumer Privacy Act (CCPA/CPRA), and relevant international data privacy laws.</p>
+
+    <h2>2. Personal Data We Collect</h2>
+    <p>To execute automated WhatsApp order verification, SwiftCOD collects and processes only the minimum data strictly necessary:</p>
+    <h3>A. Customer Data (Collected via Shopify Webhooks &amp; Admin API)</h3>
+    <ul>
+      <li><strong>Phone Number:</strong> Customer shipping or billing phone number (used exclusively to deliver the transactional verification message via WhatsApp).</li>
+      <li><strong>Customer Name:</strong> First and last name (used to personalize the greeting in the verification notification).</li>
+      <li><strong>Order Metadata:</strong> Shopify Order ID, order number, line items, order total amount, and currency.</li>
+      <li><strong>Verification Status &amp; History:</strong> Message delivery timestamps, quick-reply responses (<code>CONFIRMED</code>, <code>CANCELLED</code>, <code>EXPIRED</code>), and Meta WhatsApp message delivery IDs.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Zero Payment Card Storage:</strong> SwiftCOD never collects, processes, or stores credit or debit card numbers, CVVs, bank account credentials, or passwords.
+    </div>
+
+    <h3>B. Merchant Account Data</h3>
+    <ul>
+      <li><strong>Shopify Domain:</strong> <code>your-store.myshopify.com</code> domain identifier.</li>
+      <li><strong>Shopify OAuth Access Token:</strong> Stored securely in encrypted session storage to query and update order tags.</li>
+      <li><strong>Merchant Preferences:</strong> Auto-cancellation toggles, expiry window thresholds, RTO estimated cost metrics, and custom tags.</li>
+    </ul>
+
+    <h2>3. Purpose &amp; Legal Basis for Data Processing</h2>
+    <p>We process personal data under the following legal bases pursuant to Article 6 of the GDPR:</p>
+    <ul>
+      <li><strong>Performance of a Contract (Art. 6(1)(b) GDPR):</strong> Processing customer contact numbers and order details is necessary to verify customer intent and perform the transaction requested by the customer.</li>
+      <li><strong>Legitimate Interests (Art. 6(1)(f) GDPR):</strong> Enabling merchants to prevent fraudulent orders, combat Return-to-Origin (RTO) abuse, and protect shipping logistics from unauthorized or fictitious orders.</li>
+      <li><strong>Legal Compliance (Art. 6(1)(c) GDPR):</strong> Adhering to statutory data preservation, tax, and auditing requirements where applicable.</li>
+    </ul>
+
+    <h2>4. Sub-processors &amp; Third-Party Services</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Sub-processor</th>
+          <th>Purpose</th>
+          <th>Location</th>
+          <th>Security Standards</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Meta Platforms / WhatsApp Cloud API</strong></td>
+          <td>Transactional message delivery</td>
+          <td>Ireland / USA</td>
+          <td>SOC 2, ISO 27001, TLS Encryption</td>
+        </tr>
+        <tr>
+          <td><strong>Supabase, Inc. (AWS)</strong></td>
+          <td>Encrypted cloud PostgreSQL database</td>
+          <td>Tokyo, Japan / USA</td>
+          <td>SOC 2 Type II, AES-256 at rest</td>
+        </tr>
+        <tr>
+          <td><strong>Shopify, Inc.</strong></td>
+          <td>E-commerce platform &amp; webhooks</td>
+          <td>Canada / Global</td>
+          <td>Level 1 PCI DSS, SOC 2 Type II</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>5. Mandatory Shopify Privacy Compliance Endpoints</h2>
+    <p>SwiftCOD implements full support for Shopify’s mandatory compliance webhooks:</p>
+    <ul>
+      <li><strong>Customer Data Request (<code>/api/webhooks/customers/data_request</code>):</strong> Exports all verification records associated with a customer's phone number or order history in structured JSON format within statutory deadlines.</li>
+      <li><strong>Customer Redaction (<code>/api/webhooks/customers/redact</code>):</strong> Permanently redacts or deletes customer personal identifiers upon verified request within 48 hours.</li>
+      <li><strong>Shop Redaction (<code>/api/webhooks/shop/redact</code>):</strong> Permanently purges all stored order verification logs, shop configurations, and session records 48 hours after app uninstallation.</li>
+    </ul>
+
+    <h2>6. Customer &amp; Merchant Rights (GDPR &amp; CCPA/CPRA)</h2>
+    <p>Under GDPR and CCPA, individuals hold the right of access, rectification, erasure, and restriction of processing. To exercise any of these rights, contact our Data Protection Officer at <strong>privacy@swiftcod.io</strong> or submit a request directly through your Shopify store merchant.</p>
+
+    <h2>7. Data Security Measures</h2>
+    <p>All data in transit is encrypted using <strong>TLS 1.3</strong>. All database records at rest are encrypted with <strong>AES-256</strong>. API keys and credentials are strictly isolated in production environment variables with zero plaintext logging.</p>
+
+    <div class="footer">
+      &copy; 2026 SwiftCOD: WhatsApp Verify. All rights reserved. &bull; Inquiries: <strong>privacy@swiftcod.io</strong>
+    </div>
+  </div>
+</body>
+</html>
