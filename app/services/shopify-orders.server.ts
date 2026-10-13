@@ -351,3 +351,290 @@ export async function tagOrderExpired(
   await addOrderTags(admin, orderId, [tag]);
 }
 
+// ---------------------------------------------------------------------------
+// Multi-Market Order Modifications (Address, Delivery Slot, Item Edit)
+// ---------------------------------------------------------------------------
+
+export interface ShippingAddressInput {
+  address1?: string;
+  address2?: string;
+  city?: string;
+  province?: string;
+  zip?: string;
+  countryCode?: string;
+}
+
+const UPDATE_SHIPPING_ADDRESS_MUTATION = `#graphql
+  mutation UpdateOrderShippingAddress($input: OrderInput!) {
+    orderUpdate(input: $input) {
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+/**
+ * Updates an order's shipping address via GraphQL orderUpdate, with REST fallback.
+ * Strictly adheres to PCD guidelines (selects userErrors only).
+ */
+export async function updateOrderShippingAddress(
+  admin: AdminGraphqlClient,
+  orderId: string | number,
+  shippingAddress: ShippingAddressInput,
+  shop?: string,
+  accessToken?: string,
+): Promise<boolean> {
+  const id = toOrderGid(orderId);
+  const numericId = String(orderId).replace(/\D/g, "");
+  let updated = false;
+
+  try {
+    const res = await admin.graphql(UPDATE_SHIPPING_ADDRESS_MUTATION, {
+      variables: {
+        input: {
+          id,
+          shippingAddress: {
+            address1: shippingAddress.address1,
+            address2: shippingAddress.address2,
+            city: shippingAddress.city,
+            province: shippingAddress.province,
+            zip: shippingAddress.zip,
+            countryCode: shippingAddress.countryCode,
+          },
+        },
+      },
+    });
+    const json = (await res.json()) as any;
+    if (json.data?.orderUpdate && (!json.data.orderUpdate.userErrors || json.data.orderUpdate.userErrors.length === 0)) {
+      updated = true;
+    } else if (json.data?.orderUpdate?.userErrors?.length) {
+      console.warn(`[shopify-orders] GraphQL orderUpdate address userErrors:`, json.data.orderUpdate.userErrors);
+    }
+  } catch (graphqlErr: any) {
+    console.warn(`[shopify-orders] GraphQL orderUpdate address notice: ${graphqlErr.message}`);
+  }
+
+  // REST fallback
+  if (!updated && shop && accessToken && numericId) {
+    try {
+      const restRes = await fetch(`https://${shop}/admin/api/2025-01/orders/${numericId}.json`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": accessToken,
+        },
+        body: JSON.stringify({
+          order: {
+            id: Number(numericId),
+            shipping_address: {
+              address1: shippingAddress.address1,
+              city: shippingAddress.city,
+              province: shippingAddress.province,
+              zip: shippingAddress.zip,
+              country_code: shippingAddress.countryCode,
+            },
+          },
+        }),
+      });
+      if (restRes.ok) {
+        updated = true;
+        console.log(`[shopify-orders] Shipping address updated via REST fallback for order ${numericId}`);
+      }
+    } catch (restErr: any) {
+      console.error(`[shopify-orders] REST address fallback failed:`, restErr.message);
+    }
+  }
+
+  // Fallback: append address to order note
+  if (!updated) {
+    const noteAddr = shippingAddress.address1 || JSON.stringify(shippingAddress);
+    await appendOrderVerificationNote(admin, orderId, `[Customer Address Updated: ${noteAddr}]`);
+    updated = true;
+  }
+
+  return updated;
+}
+
+const UPDATE_DELIVERY_SLOT_MUTATION = `#graphql
+  mutation UpdateDeliverySlot($input: OrderInput!) {
+    orderUpdate(input: $input) {
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+/**
+ * Records customer's delivery time window preference into Shopify note_attributes and order note.
+ */
+export async function updateOrderDeliverySlot(
+  admin: AdminGraphqlClient,
+  orderId: string | number,
+  slotText: string,
+  shop?: string,
+  accessToken?: string,
+): Promise<boolean> {
+  const id = toOrderGid(orderId);
+  const numericId = String(orderId).replace(/\D/g, "");
+  let updated = false;
+
+  try {
+    const res = await admin.graphql(UPDATE_DELIVERY_SLOT_MUTATION, {
+      variables: {
+        input: {
+          id,
+          customAttributes: [
+            { key: "Delivery Time Preference", value: slotText },
+          ],
+        },
+      },
+    });
+    const json = (await res.json()) as any;
+    if (json.data?.orderUpdate && (!json.data.orderUpdate.userErrors || json.data.orderUpdate.userErrors.length === 0)) {
+      updated = true;
+    }
+  } catch (graphqlErr: any) {
+    console.warn(`[shopify-orders] GraphQL delivery slot update notice: ${graphqlErr.message}`);
+  }
+
+  // REST fallback
+  if (!updated && shop && accessToken && numericId) {
+    try {
+      const getRes = await fetch(`https://${shop}/admin/api/2025-01/orders/${numericId}.json?fields=id,note_attributes`, {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": accessToken,
+        },
+      });
+      const getData = (await getRes.json()) as any;
+      const currentAttrs: Array<{ name: string; value: string }> = getData?.order?.note_attributes || [];
+      const updatedAttrs = [
+        ...currentAttrs.filter((a) => a.name !== "Delivery Time Preference"),
+        { name: "Delivery Time Preference", value: slotText },
+      ];
+
+      const putRes = await fetch(`https://${shop}/admin/api/2025-01/orders/${numericId}.json`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shopify-Access-Token": accessToken,
+        },
+        body: JSON.stringify({
+          order: {
+            id: Number(numericId),
+            note_attributes: updatedAttrs,
+          },
+        }),
+      });
+      if (putRes.ok) {
+        updated = true;
+      }
+    } catch (restErr: any) {
+      console.warn(`[shopify-orders] REST slot fallback notice: ${restErr.message}`);
+    }
+  }
+
+  // Append note attribute text to order note
+  await appendOrderVerificationNote(admin, orderId, `[Delivery Slot: ${slotText}]`);
+  return true;
+}
+
+const ORDER_EDIT_BEGIN_MUTATION = `#graphql
+  mutation OrderEditBegin($id: ID!) {
+    orderEditBegin(id: $id) {
+      calculatedOrder {
+        id
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+const ORDER_EDIT_SET_QTY_MUTATION = `#graphql
+  mutation OrderEditSetQty($id: ID!, $lineItemId: ID!, $quantity: Int!) {
+    orderEditSetQuantity(id: $id, lineItemId: $lineItemId, quantity: $quantity) {
+      calculatedOrder {
+        id
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+const ORDER_EDIT_COMMIT_MUTATION = `#graphql
+  mutation OrderEditCommit($id: ID!) {
+    orderEditCommit(id: $id, notifyCustomer: false) {
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+/**
+ * Modifies line item quantity on a Shopify order using GraphQL OrderEdit mutations,
+ * with note fallback if order editing is restricted or completed.
+ */
+export async function applyOrderEditQuantity(
+  admin: AdminGraphqlClient,
+  orderId: string | number,
+  lineItemId: string | number,
+  newQuantity: number,
+  shop?: string,
+  accessToken?: string,
+): Promise<{ success: boolean; editedViaGraphQL: boolean }> {
+  const orderGid = toOrderGid(orderId);
+  const lineItemGid = String(lineItemId).startsWith("gid://shopify/LineItem/")
+    ? String(lineItemId)
+    : `gid://shopify/LineItem/${lineItemId}`;
+
+  try {
+    const beginRes = await admin.graphql(ORDER_EDIT_BEGIN_MUTATION, {
+      variables: { id: orderGid },
+    });
+    const beginJson = (await beginRes.json()) as any;
+    const calcOrderId = beginJson.data?.orderEditBegin?.calculatedOrder?.id;
+
+    if (calcOrderId) {
+      const setQtyRes = await admin.graphql(ORDER_EDIT_SET_QTY_MUTATION, {
+        variables: {
+          id: calcOrderId,
+          lineItemId: lineItemGid,
+          quantity: newQuantity,
+        },
+      });
+      const setQtyJson = (await setQtyRes.json()) as any;
+
+      if (!setQtyJson.data?.orderEditSetQuantity?.userErrors?.length) {
+        const commitRes = await admin.graphql(ORDER_EDIT_COMMIT_MUTATION, {
+          variables: { id: calcOrderId },
+        });
+        const commitJson = (await commitRes.json()) as any;
+        if (!commitJson.data?.orderEditCommit?.userErrors?.length) {
+          console.log(`[shopify-orders] Order edit committed for ${orderGid}: item ${lineItemGid} -> qty ${newQuantity}`);
+          return { success: true, editedViaGraphQL: true };
+        }
+      }
+    }
+  } catch (err: any) {
+    console.warn(`[shopify-orders] GraphQL orderEdit note: ${err.message}`);
+  }
+
+  // Fallback: Record modification request in note & note attributes
+  const noteText = `[Customer Requested Item Modification: Line Item ${lineItemId} quantity -> ${newQuantity}]`;
+  await appendOrderVerificationNote(admin, orderId, noteText);
+  return { success: true, editedViaGraphQL: false };
+}
+
+

@@ -6,7 +6,13 @@ import {
   DEFAULT_COUNTRY_CODE,
   formatPhoneNumber,
   sendCodVerificationMessage,
+  sendRichCodVerificationMessage,
 } from "../services/whatsapp.server";
+import {
+  resolveOrderContext,
+  type LineItemSummary,
+  type SupportedLocale,
+} from "../services/localization.server";
 
 /**
  * ORDERS_CREATE webhook — subscribed in shopify.app.toml as
@@ -26,6 +32,11 @@ interface OrderAddress {
   name?: string | null;
   phone?: string | null;
   country_code?: string | null;
+  address1?: string | null;
+  address2?: string | null;
+  city?: string | null;
+  province?: string | null;
+  zip?: string | null;
 }
 
 export interface OrderCreatePayload {
@@ -35,17 +46,28 @@ export interface OrderCreatePayload {
   order_number?: number | null;
   total_price?: string | null;
   currency?: string | null;
+  presentment_currency?: string | null;
   financial_status?: string | null;
   gateway?: string | null;
   payment_gateway_names?: string[] | null;
   phone?: string | null;
+  customer_locale?: string | null;
   customer?: {
     first_name?: string | null;
     last_name?: string | null;
     phone?: string | null;
+    locale?: string | null;
   } | null;
   shipping_address?: OrderAddress | null;
   billing_address?: OrderAddress | null;
+  line_items?: Array<{
+    id?: number | string;
+    title?: string;
+    quantity?: number;
+    price?: string;
+    variant_title?: string | null;
+    image?: { src?: string } | null;
+  }> | null;
 }
 
 export function isOrderCreatePayload(value: unknown): value is OrderCreatePayload {
@@ -136,13 +158,17 @@ interface DispatchArgs {
   currency: string;
   customerName: string | null;
   templateName?: string;
+  locale?: SupportedLocale;
+  items?: LineItemSummary[];
+  shippingAddress?: string | null;
+  productImageUrl?: string | null;
 }
 
-/** Sends the WhatsApp message and records the outcome. Never throws. */
+/** Sends the rich WhatsApp message and records the outcome. Never throws. */
 async function dispatchVerificationMessage(args: DispatchArgs): Promise<void> {
   let messageId: string;
   try {
-    ({ messageId } = await sendCodVerificationMessage({
+    ({ messageId } = await sendRichCodVerificationMessage({
       phoneNumberId: args.phoneNumberId,
       accessToken: args.accessToken,
       to: args.to,
@@ -151,7 +177,12 @@ async function dispatchVerificationMessage(args: DispatchArgs): Promise<void> {
       totalAmount: args.totalAmount,
       currency: args.currency,
       customerName: args.customerName,
+      storeName: args.shop,
       templateName: args.templateName,
+      locale: args.locale,
+      items: args.items,
+      shippingAddress: args.shippingAddress,
+      productImageUrl: args.productImageUrl,
     }));
   } catch (error) {
     console.error(
@@ -214,13 +245,43 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const shopifyOrderId = order.admin_graphql_api_id ?? `gid://shopify/Order/${order.id}`;
     const orderNumber = order.name ?? `#${order.order_number ?? order.id}`;
     const totalAmount = order.total_price ?? "0";
-    const currency = order.currency ?? "PKR";
+    const rawCurrency = order.currency ?? "PKR";
     const customerName = pickCustomerName(order);
     const rawPhone = pickCustomerPhone(order);
 
     const countryIso = (order.shipping_address?.country_code ?? order.billing_address?.country_code ?? "").toUpperCase();
     const countryCode = CALLING_CODES[countryIso] ?? config.defaultCountryCode ?? DEFAULT_COUNTRY_CODE;
-    const e164Phone = rawPhone ? formatPhoneNumber(rawPhone, countryCode) : null;
+
+    // Enterprise Multi-Market Context Resolution
+    const customerLocale = order.customer?.locale || order.customer_locale || null;
+    const resolvedContext = resolveOrderContext({
+      customerPhone: rawPhone,
+      customerLocale,
+      shippingCountryCode: countryIso,
+      totalPrice: totalAmount,
+      currency: rawCurrency,
+      presentmentCurrency: order.presentment_currency,
+    });
+
+    const activeLocale = resolvedContext.locale;
+    const activeCurrency = resolvedContext.currency;
+    const e164Phone = resolvedContext.normalizedPhone || (rawPhone ? formatPhoneNumber(rawPhone, countryCode) : null);
+
+    const items: LineItemSummary[] = (order.line_items || []).map((li) => ({
+      title: li.title || "Product",
+      quantity: li.quantity || 1,
+      price: li.price,
+      variantTitle: li.variant_title,
+    }));
+
+    const productImageUrl = order.line_items?.[0]?.image?.src || null;
+    const addressParts = [
+      order.shipping_address?.address1,
+      order.shipping_address?.city,
+      order.shipping_address?.province,
+      countryIso,
+    ].filter(Boolean);
+    const shippingAddress = addressParts.length > 0 ? addressParts.join(", ") : null;
 
     const phoneNumberId = config.whatsappPhoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID || null;
     const accessToken = config.whatsappAccessToken || process.env.WHATSAPP_ACCESS_TOKEN || null;
@@ -236,8 +297,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           customerPhone: e164Phone ?? rawPhone ?? "",
           customerName,
           totalAmount,
-          currency,
-          status: canSend ? VerificationStatus.PENDING : VerificationStatus.FAILED,
+          currency: activeCurrency,
+          activeCurrency,
+          activeLocale,
+          shippingAddress,
+          productImageUrl,
+          status: canSend ? VerificationStatus.PENDING_VERIFICATION : VerificationStatus.FAILED,
         },
         select: { id: true },
       });
@@ -268,9 +333,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       to: e164Phone,
       orderNumber,
       totalAmount,
-      currency,
+      currency: activeCurrency,
       customerName,
       templateName: config.whatsappTemplateName,
+      locale: activeLocale,
+      items,
+      shippingAddress,
+      productImageUrl,
     });
   } catch (error) {
     // Always acknowledge so Shopify doesn't retry-storm; the error is logged for follow-up.

@@ -2,8 +2,10 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { timingSafeEqual } from "node:crypto";
 import {
   extractButtonReplies,
+  extractInboundMessages,
   isValidSignature,
   processButtonReplies,
+  processInboundMessages,
   type MetaWebhookBody,
 } from "../services/whatsapp-decision.server";
 
@@ -83,10 +85,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return new Response("Bad Request", { status: 400 });
   }
 
-  const replies = extractButtonReplies(body);
-  if (replies.length > 0) {
+  const inboundMessages = extractInboundMessages(body);
+  if (inboundMessages.length > 0) {
     // Acknowledge immediately; Meta retries if we're slow to respond.
-    void processButtonReplies(replies);
+    void processInboundMessages(inboundMessages);
+  } else {
+    const replies = extractButtonReplies(body);
+    if (replies.length > 0) {
+      void processButtonReplies(replies);
+    }
   }
 
   return new Response(null, { status: 200 });

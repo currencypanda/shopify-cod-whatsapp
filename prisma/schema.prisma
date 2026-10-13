@@ -56,6 +56,10 @@ model ShopConfig {
 // Order verification records & state machine
 enum VerificationStatus {
   PENDING
+  PENDING_VERIFICATION
+  AWAITING_ADDRESS_INPUT
+  AWAITING_ITEM_MODIFICATION
+  AWAITING_SLOT_SELECTION
   CONFIRMED
   CANCELLED
   EXPIRED
@@ -73,6 +77,14 @@ model VerificationOrder {
   totalAmount       Decimal
   currency          String             @default("PKR")
   status            VerificationStatus @default(PENDING)
+  activeCurrency    String?
+  activeLocale      String?
+  selectedTimeSlot  String?
+  shippingAddress   String?
+  productImageUrl   String?
+  locationLat       Float?
+  locationLng       Float?
+  auditLog          String?
   whatsappMessageId String?
   respondedAt       DateTime?
   createdAt         DateTime           @default(now())

@@ -1,21 +1,51 @@
-FROM node:18-alpine
-RUN apk add --no-cache openssl
+# -----------------------------------------------------------------------------
+# Stage 1: Build Environment
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS builder
 
-EXPOSE 3000
+RUN apk add --no-cache openssl libc6-compat
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json package-lock.json* ./
+RUN npm ci --include=dev
+
+# Copy Prisma schema and generate Prisma clients
+COPY prisma ./prisma/
+RUN npx prisma generate --schema=prisma/schema.prisma && \
+    npx prisma generate --schema=prisma/schema.postgresql.prisma
+
+# Copy application source code and build Remix production bundle
+COPY . .
+RUN npm run build
+
+# Prune development dependencies for compact production footprint
+RUN npm prune --omit=dev
+
+# -----------------------------------------------------------------------------
+# Stage 2: Production Runtime
+# -----------------------------------------------------------------------------
+FROM node:20-alpine AS runner
+
+RUN apk add --no-cache openssl curl wget ca-certificates
 
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV PORT=3000
 
-COPY package.json package-lock.json* ./
+# Copy built artifacts and runtime dependencies from builder
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/prisma ./prisma
 
-RUN npm ci --omit=dev && npm cache clean --force
-# Remove CLI packages since we don't need them in production by default.
-# Remove this line if you want to run CLI commands in your container.
-RUN npm remove @shopify/cli
+EXPOSE 3000
 
-COPY . .
+# Production Healthcheck Probe
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- http://localhost:3000/api/health || exit 1
 
-RUN npm run build
-
-CMD ["npm", "run", "docker-start"]
+# Start production server
+CMD ["npm", "run", "start"]

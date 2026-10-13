@@ -1,0 +1,9 @@
+{
+  "tunnelUrl": "https://agencies-fur-dealt-devices.trycloudflare.com",
+  "port": 3000,
+  "createdAt": "2026-10-12T21:16:34.200Z",
+  "metaWebhookCallbackUrl": "https://agencies-fur-dealt-devices.trycloudflare.com/api/whatsapp/webhook",
+  "metaWebhookVerifyToken": "my_whatsapp_webhook_verify_token_123",
+  "authRedirectUrl": "https://agencies-fur-dealt-devices.trycloudflare.com/api/auth",
+  "applicationUrl": "https://agencies-fur-dealt-devices.trycloudflare.com"
+}
