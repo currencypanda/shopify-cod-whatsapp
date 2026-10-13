@@ -29,7 +29,7 @@ const DE_MOBILE_REGEX = /^\+491[567]\d{7,9}$/;
 
 export type VerificationDecision = "CONFIRM" | "CANCEL";
 
-const BUTTON_ID_REGEX = /^(CONFIRM|CANCEL):([A-Za-z0-9-_:\/.]{1,200})$/;
+const BUTTON_ID_REGEX = /^(CONFIRM(?:_ORDER)?|CANCEL(?:_ORDER)?):([A-Za-z0-9-_:\/.]{1,200})$/i;
 
 /** Builds the button reply id sent to WhatsApp, e.g. `CONFIRM:<verificationId>`. */
 export function buildButtonId(
@@ -45,8 +45,11 @@ export function parseButtonId(
 ): { decision: VerificationDecision; verificationId: string } | null {
   const match = BUTTON_ID_REGEX.exec(buttonId.trim());
   if (!match) return null;
-  const [, decision, verificationId] = match;
-  if ((decision !== "CONFIRM" && decision !== "CANCEL") || !verificationId) {
+  const [, rawDecision, verificationId] = match;
+  const decision: VerificationDecision = rawDecision.toUpperCase().startsWith("CONFIRM")
+    ? "CONFIRM"
+    : "CANCEL";
+  if (!verificationId) {
     return null;
   }
   return { decision, verificationId };

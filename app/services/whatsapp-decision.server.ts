@@ -196,8 +196,15 @@ export async function handleButtonReply(reply: ButtonReply): Promise<void> {
   // Auto-cancel order in Shopify if configured by merchant
   if (decision === "CANCEL" && shopConfig.autoCancelOnCustomerCancel) {
     try {
-      const { admin } = await unauthenticated.admin(verification.shop);
-      await cancelShopifyOrder(admin, verification.shopifyOrderId, "CUSTOMER", true);
+      const { admin, session } = await unauthenticated.admin(verification.shop);
+      await cancelShopifyOrder(
+        admin,
+        verification.shopifyOrderId,
+        "CUSTOMER",
+        true,
+        verification.shop,
+        session?.accessToken,
+      );
       console.log(
         `[whatsapp] ${verification.shop} order ${verification.orderNumber} auto-cancelled in Shopify`,
       );
