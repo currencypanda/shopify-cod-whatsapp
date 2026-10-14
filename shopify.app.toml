@@ -26,9 +26,9 @@ api_version = "2027-01"
   # topics = [ "orders/create" ]
 
   [webhooks.privacy_compliance]
-  customer_data_request_url = "/webhooks/customers/data_request"
-  customer_redact_url = "/webhooks/customers/redact"
-  shop_redact_url = "/webhooks/shop/redact"
+  customer_data_request_url = "/api/webhooks/customers-data-request"
+  customer_redact_url = "/api/webhooks/customers-redact"
+  shop_redact_url = "/api/webhooks/shop-redact"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes

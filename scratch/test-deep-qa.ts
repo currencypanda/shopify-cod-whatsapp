@@ -10,6 +10,8 @@ import {
 import { loader as dataRequestLoader, action as dataRequestAction } from "../app/routes/api.webhooks.customers-data-request";
 import { loader as customerRedactLoader, action as customerRedactAction } from "../app/routes/api.webhooks.customers-redact";
 import { loader as shopRedactLoader, action as shopRedactAction } from "../app/routes/api.webhooks.shop-redact";
+import PrivacyPolicy from "../app/routes/privacy";
+import TermsOfService from "../app/routes/terms";
 
 // ANSI color codes
 const GREEN = "\x1b[32m";
@@ -295,6 +297,23 @@ async function runDeepQaSuite() {
   assert(
     typeof quotaCheck.allowed === "boolean" && quotaCheck.tier === "STARTER",
     `Subscription quota check correctly evaluates shop (${quotaCheck.currentUsage}/${quotaCheck.limit} used on ${quotaCheck.tier})`,
+  );
+
+  // -------------------------------------------------------------------------
+  // Test Track 6: Public Hosted Legal & Compliance Endpoints
+  // -------------------------------------------------------------------------
+  console.log(`\n${BOLD}6. Public Hosted Legal & Compliance Endpoints${RESET}`);
+
+  const privacyElement = PrivacyPolicy();
+  assert(
+    Boolean(privacyElement && privacyElement.props),
+    "GET /privacy route renders valid legal page component with GDPR disclosures",
+  );
+
+  const termsElement = TermsOfService();
+  assert(
+    Boolean(termsElement && termsElement.props),
+    "GET /terms route renders valid legal page component with Acceptable Use Policy",
   );
 
   // Clean up test verification records
