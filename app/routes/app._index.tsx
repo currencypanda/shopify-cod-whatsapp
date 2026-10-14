@@ -30,6 +30,7 @@ import {
   type BillingTierId,
   createAppSubscription,
 } from "../services/billing.server";
+import { MerchantSupportDrawer } from "../components/MerchantSupportDrawer";
 
 // ---------------------------------------------------------------------------
 // Loader — Fetch SaaS metrics, verifications & zero-config shop settings
@@ -390,6 +391,9 @@ export default function Index() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("ALL");
 
+  // 24/7 Merchant Support Copilot Drawer state
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+
   // Keep form fields synced if loader re-runs
   useEffect(() => {
     setIsEnabled(config.isEnabled);
@@ -450,7 +454,13 @@ export default function Index() {
   }, [metrics.monthlyUsageCount, metrics.currentPlan.orderLimit]);
 
   return (
-    <Page fullWidth>
+    <Page
+      fullWidth
+      primaryAction={{
+        content: "💬 24/7 Support Copilot",
+        onAction: () => setIsSupportOpen(true),
+      }}
+    >
       <TitleBar title="COD WhatsApp Verification & RTO Protection" />
       <BlockStack gap="500">
         {/* Managed Cloud Infrastructure Reassurance Banner */}
@@ -1036,6 +1046,60 @@ export default function Index() {
           </Layout.Section>
         </Layout>
       </BlockStack>
+
+      {/* Floating 24/7 AI Support Copilot Trigger Button */}
+      <button
+        type="button"
+        onClick={() => setIsSupportOpen(true)}
+        aria-label="Open 24/7 Support Copilot"
+        style={{
+          position: "fixed",
+          bottom: "24px",
+          right: "24px",
+          zIndex: 9990,
+          backgroundColor: "#008060",
+          color: "#ffffff",
+          border: "none",
+          borderRadius: "28px",
+          padding: "12px 18px",
+          boxShadow: "0 4px 14px rgba(0, 0, 0, 0.25)",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          fontSize: "13px",
+          fontWeight: 600,
+          transition: "transform 0.15s ease-in-out, background-color 0.15s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = "#006e52";
+          e.currentTarget.style.transform = "scale(1.03)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = "#008060";
+          e.currentTarget.style.transform = "scale(1)";
+        }}
+      >
+        <span style={{ fontSize: "16px" }}>💬</span>
+        <span>24/7 Support Copilot</span>
+        <span
+          style={{
+            width: "8px",
+            height: "8px",
+            borderRadius: "50%",
+            backgroundColor: "#50e3c2",
+            display: "inline-block",
+            boxShadow: "0 0 6px #50e3c2",
+          }}
+        />
+      </button>
+
+      {/* Slide-over Support Drawer */}
+      <MerchantSupportDrawer
+        isOpen={isSupportOpen}
+        onClose={() => setIsSupportOpen(false)}
+        shop={config.shop}
+      />
     </Page>
   );
 }
