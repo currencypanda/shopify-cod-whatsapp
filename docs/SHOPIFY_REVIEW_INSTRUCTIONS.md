@@ -96,7 +96,7 @@ Shopify QA reviewers can verify that our mandatory privacy compliance endpoints 
 
 ### 1. Customer Data Request
 ```bash
-curl -X POST "https://shopify-cod-whatsapp.onrender.com/api/webhooks/customers/data_request" \
+curl -X POST "https://swiftcod-whatsapp-verify.onrender.com/api/webhooks/customers-data-request" \
   -H "Content-Type: application/json" \
   -H "X-Shopify-Hmac-Sha256: test_mock_signature" \
   -d '{
@@ -116,7 +116,7 @@ curl -X POST "https://shopify-cod-whatsapp.onrender.com/api/webhooks/customers/d
 
 ### 2. Customer Redaction
 ```bash
-curl -X POST "https://shopify-cod-whatsapp.onrender.com/api/webhooks/customers/redact" \
+curl -X POST "https://swiftcod-whatsapp-verify.onrender.com/api/webhooks/customers-redact" \
   -H "Content-Type: application/json" \
   -H "X-Shopify-Hmac-Sha256: test_mock_signature" \
   -d '{
@@ -136,7 +136,7 @@ curl -X POST "https://shopify-cod-whatsapp.onrender.com/api/webhooks/customers/r
 
 ### 3. Shop Redaction
 ```bash
-curl -X POST "https://shopify-cod-whatsapp.onrender.com/api/webhooks/shop/redact" \
+curl -X POST "https://swiftcod-whatsapp-verify.onrender.com/api/webhooks/shop-redact" \
   -H "Content-Type: application/json" \
   -H "X-Shopify-Hmac-Sha256: test_mock_signature" \
   -d '{
@@ -150,7 +150,7 @@ curl -X POST "https://shopify-cod-whatsapp.onrender.com/api/webhooks/shop/redact
 
 ### 4. Health Check
 ```bash
-curl -X GET "https://shopify-cod-whatsapp.onrender.com/api/health"
+curl -X GET "https://swiftcod-whatsapp-verify.onrender.com/api/health"
 ```
 *Expected Response:* `HTTP 200 OK` `{ "status": "ok", "version": "1.0.0", "timestamp": "..." }`
 
