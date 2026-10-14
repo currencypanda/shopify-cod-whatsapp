@@ -1,6 +1,7 @@
 import { parsePhoneNumber, type CountryCode } from "libphonenumber-js";
 
-export type SupportedLocale = "en" | "ar" | "es";
+export type SupportedLocale = "en" | "ar" | "es" | "ur";
+export type BotTone = "friendly" | "urgent" | "formal";
 
 export interface LocalizedOrderContext {
   locale: SupportedLocale;
@@ -35,6 +36,7 @@ const SPANISH_COUNTRIES = new Set([
 export function resolveLocale(countryCode?: string | null, customerLocale?: string | null): SupportedLocale {
   if (customerLocale) {
     const clean = customerLocale.toLowerCase().trim();
+    if (clean.startsWith("ur")) return "ur";
     if (clean.startsWith("ar")) return "ar";
     if (clean.startsWith("es")) return "es";
     if (clean.startsWith("en")) return "en";
@@ -42,6 +44,7 @@ export function resolveLocale(countryCode?: string | null, customerLocale?: stri
 
   if (countryCode) {
     const code = countryCode.toUpperCase().trim();
+    if (code === "PK") return "ur";
     if (ARABIC_COUNTRIES.has(code)) return "ar";
     if (SPANISH_COUNTRIES.has(code)) return "es";
   }
@@ -57,11 +60,12 @@ export function formatCurrency(amount: number | string, currency: string = "USD"
   const safeAmount = isNaN(numericAmount) ? 0 : numericAmount;
   const safeCurrency = (currency || "USD").toUpperCase().trim();
 
-  // Map our internal locale codes to full BCP 47 language tags for Intl
+  // Map internal locale codes to full BCP 47 language tags for Intl
   const intlLocaleMap: Record<SupportedLocale, string> = {
     en: "en-US",
     ar: "ar-SA",
     es: "es-ES",
+    ur: "en-PK",
   };
 
   try {
@@ -119,7 +123,7 @@ export function resolveOrderContext(input: OrderInputPayload): LocalizedOrderCon
   if (!countryCode) countryCode = "PK";
 
   const locale = resolveLocale(countryCode, input.customerLocale);
-  const currency = (input.presentmentCurrency || input.currency || "PKR").toUpperCase().trim();
+  const currency = (input.presentmentCurrency || input.currency || (locale === "ur" ? "PKR" : "USD")).toUpperCase().trim();
   const formattedAmount = formatCurrency(input.totalPrice ?? 0, currency, locale);
   const normalizedPhone = normalizePhoneNumber(input.customerPhone || "", countryCode);
 
@@ -139,6 +143,12 @@ export interface LineItemSummary {
   variantTitle?: string | null;
 }
 
+export interface ToneVariation {
+  greeting: (customerName?: string | null) => string;
+  orderSummaryTitle: string;
+  actionPrompt: string;
+}
+
 export interface TemplateStrings {
   greeting: (customerName?: string | null) => string;
   orderSummaryTitle: string;
@@ -147,6 +157,7 @@ export interface TemplateStrings {
   addressLabel: string;
   totalCodLabel: string;
   actionPrompt: string;
+  tones: Record<BotTone, ToneVariation>;
   buttons: {
     confirm: string;
     cancel: string;
@@ -174,13 +185,30 @@ export interface TemplateStrings {
 
 export const I18N_DICTIONARIES: Record<SupportedLocale, TemplateStrings> = {
   en: {
-    greeting: (name) => `Hello ${name ? name : "Valued Customer"}! Thank you for ordering with us.`,
+    greeting: (name) => `Hello ${name ? name : "Valued Customer"}! 😊 Thank you so much for ordering with us.`,
     orderSummaryTitle: "📦 Order Verification Required",
     orderNumberLabel: "Order Number:",
     itemsLabel: "Items Ordered:",
     addressLabel: "Delivery Address:",
     totalCodLabel: "Total Cash on Delivery to Pay:",
-    actionPrompt: "Please confirm your Cash on Delivery order so our warehouse can pack and dispatch your parcel.",
+    actionPrompt: "Please confirm your Cash on Delivery order below so our team can prepare and dispatch your parcel right away!",
+    tones: {
+      friendly: {
+        greeting: (name) => `Hello ${name ? name : "Valued Customer"}! 😊 Thank you so much for ordering with us.`,
+        orderSummaryTitle: "📦 Order Verification Required",
+        actionPrompt: "Please confirm your Cash on Delivery order below so our team can prepare and dispatch your parcel right away!",
+      },
+      urgent: {
+        greeting: (name) => `Attention ${name ? name : "Customer"}: Action required on your recent order.`,
+        orderSummaryTitle: "⚡ Urgent: Verify Your COD Order",
+        actionPrompt: "⚠️ Please confirm your Cash on Delivery order immediately. Reserved stock will be released if not confirmed promptly.",
+      },
+      formal: {
+        greeting: (name) => `Dear ${name ? name : "Customer"}, thank you for your order.`,
+        orderSummaryTitle: "📋 Order Verification Notice",
+        actionPrompt: "Kindly review and verify your Cash on Delivery order details below to authorize shipment.",
+      },
+    },
     buttons: {
       confirm: "🟢 Confirm Order",
       cancel: "🔴 Cancel Order",
@@ -205,14 +233,80 @@ export const I18N_DICTIONARIES: Record<SupportedLocale, TemplateStrings> = {
       orderCancelled: (orderNum) => `❌ Order ${orderNum} has been cancelled per your request. The reserved stock has been restocked.`,
     },
   },
+  ur: {
+    greeting: (name) => `Assalam-o-Alaikum ${name ? name : "Janab"}! 😊 Humare store se shopping karne ka bohat shukriya.`,
+    orderSummaryTitle: "📦 Order Tasdeeq (Verification)",
+    orderNumberLabel: "Order Number:",
+    itemsLabel: "Ordered Saman:",
+    addressLabel: "Delivery Pata (Address):",
+    totalCodLabel: "Adaigi Cash on Delivery (Total COD):",
+    actionPrompt: "Meharbani farma kar apna Cash on Delivery order confirm karein taake hum foran aap ka parcel dispatch kar sakein!",
+    tones: {
+      friendly: {
+        greeting: (name) => `Assalam-o-Alaikum ${name ? name : "Janab"}! 😊 Humare store se shopping karne ka bohat shukriya.`,
+        orderSummaryTitle: "📦 Order Tasdeeq (Verification)",
+        actionPrompt: "Meharbani farma kar apna Cash on Delivery order confirm karein taake hum foran aap ka parcel dispatch kar sakein!",
+      },
+      urgent: {
+        greeting: (name) => `Zaroori Ittila ${name ? name : "Janab"}: Aap ke order ki tasdeeq foran darkar hai.`,
+        orderSummaryTitle: "⚡ Fouri Tawajjah: COD Order Verification",
+        actionPrompt: "⚠️ Baraye meharbani apna order foran confirm karein taake stock cancel hone se bach sake aur waqt par dispatch ho sake.",
+      },
+      formal: {
+        greeting: (name) => `Mohtaram ${name ? name : "Grahak"}, aap ke order ke liye shukriya.`,
+        orderSummaryTitle: "📋 Ba-zariya Order Tasdeeq Nama",
+        actionPrompt: "Bara-e-meharbani apne Cash on Delivery order ki tasdeeq karein taake shipment ka marhala mukammal kiya ja sake.",
+      },
+    },
+    buttons: {
+      confirm: "🟢 Order Confirm Karein",
+      cancel: "🔴 Order Cancel Karein",
+      manage: "⚙️ Order Tabdeel Karein",
+      editAddress: "📍 Address Badlein",
+      editItems: "🛍️ Items Badlein",
+      selectSlot: "⏰ Delivery Time",
+    },
+    timeSlots: {
+      morning: "Subah (9:00 AM - 1:00 PM)",
+      evening: "Shaam (5:00 PM - 9:00 PM)",
+    },
+    prompts: {
+      askAddress: "📍 Baraye meharbani apna naya delivery address (Gali, Makaan/Flat number, Sheher) likh kar bhejein ya WhatsApp location pin share karein 📍.",
+      addressUpdated: (addr) => `✔ Delivery address update ho gaya hai:\n"${addr}"\n\nAb dispatch ke liye neechay [Order Confirm Karein] par tap karein.`,
+      locationReceived: (lat, lng) => `📍 GPS Location (${lat.toFixed(4)}, ${lng.toFixed(4)}) record ho gayi hai! Courier rider ke delivery note me shaamil kar di gayi hai.`,
+      askItemEdit: "🛍️ Baraye meharbani item ka naam, size ya nayi quantity likh kar send karein.",
+      itemsUpdated: (details) => `✔ Order items update ho gaye hain: ${details}`,
+      askTimeSlot: "⏰ Baraye meharbani apni pasand ka delivery waqt chuniye:",
+      timeSlotConfirmed: (slot) => `✔ Delivery waqt save ho gaya hai: ${slot}. Courier rider is waqt pohanchne ki koshish karega!`,
+      orderConfirmed: (orderNum) => `✅ Order ${orderNum} confirm ho chuka hai! Hamara warehouse aap ka parcel pack kar raha hai. Shukriya!`,
+      orderCancelled: (orderNum) => `❌ Order ${orderNum} aap ki darkhwast par cancel kar diya gaya hai. Reserved stock wapas inventory me shamil kar diya gaya hai.`,
+    },
+  },
   ar: {
-    greeting: (name) => `مرحبًا ${name ? name : "عميلنا العزيز"}! شكرًا لطلبك من متجرنا.`,
+    greeting: (name) => `مرحبًا ${name ? name : "عميلنا العزيز"}! 😊 يسعدنا ويسرنا تسوقك معنا.`,
     orderSummaryTitle: "📦 تأكيد طلب الدفع عند الاستلام",
     orderNumberLabel: "رقم الطلب:",
     itemsLabel: "المنتجات المطلوبة:",
     addressLabel: "عنوان التوصيل:",
     totalCodLabel: "إجمالي المبلغ المطلوب دفعه عند الاستلام:",
-    actionPrompt: "يرجى تأكيد طلبك للبدء في تجهيز الشحنة وإرسالها مع المندوب فورًا.",
+    actionPrompt: "يرجى تأكيد طلبك بالأسفل حتى نتمكن من تجهيز الشحنة وإرسالها فورًا إلى عنوانك!",
+    tones: {
+      friendly: {
+        greeting: (name) => `مرحبًا ${name ? name : "عميلنا العزيز"}! 😊 يسعدنا ويسرنا تسوقك معنا.`,
+        orderSummaryTitle: "📦 تأكيد طلب الدفع عند الاستلام",
+        actionPrompt: "يرجى تأكيد طلبك بالأسفل حتى نتمكن من تجهيز الشحنة وإرسالها فورًا إلى عنوانك!",
+      },
+      urgent: {
+        greeting: (name) => `تنبيه هام ${name ? name : "عميلنا العزيز"}: يُرجى اتخاذ إجراء بشأن طلبك.`,
+        orderSummaryTitle: "⚡ عاجل: تأكيد طلب الدفع عند الاستلام",
+        actionPrompt: "⚠️ يرجى تأكيد طلبك في أقرب وقت لتفادي إلغاء حجز المنتجات وإرسال الشحنة في الموعد.",
+      },
+      formal: {
+        greeting: (name) => `السيد/ة ${name ? name : "العميل المحترم"}، شكرًا لتسوقكم معنا.`,
+        orderSummaryTitle: "📋 إشعار تأكيد الطلب",
+        actionPrompt: "نرجو منكم التكرم بمراجعة وتأكيد تفاصيل طلب الدفع عند الاستلام للبدء بإجراءات الشحن.",
+      },
+    },
     buttons: {
       confirm: "🟢 تأكيد الطلب",
       cancel: "🔴 إلغاء الطلب",
@@ -238,13 +332,30 @@ export const I18N_DICTIONARIES: Record<SupportedLocale, TemplateStrings> = {
     },
   },
   es: {
-    greeting: (name) => `¡Hola ${name ? name : "Estimado/a Cliente"}! Gracias por tu compra.`,
+    greeting: (name) => `¡Hola ${name ? name : "Estimado/a Cliente"}! 😊 Muchas gracias por comprar con nosotros.`,
     orderSummaryTitle: "📦 Verificación de Pedido Contra Entrega",
     orderNumberLabel: "Número de Pedido:",
     itemsLabel: "Productos:",
     addressLabel: "Dirección de Entrega:",
     totalCodLabel: "Total Contra Entrega a Pagar:",
-    actionPrompt: "Por favor confirma tu pedido para que nuestro equipo pueda prepararlo y enviarlo de inmediato.",
+    actionPrompt: "Por favor confirma tu pedido contra entrega a continuación para que podamos preparar y despachar tu paquete de inmediato.",
+    tones: {
+      friendly: {
+        greeting: (name) => `¡Hola ${name ? name : "Estimado/a Cliente"}! 😊 Muchas gracias por comprar con nosotros.`,
+        orderSummaryTitle: "📦 Verificación de Pedido Contra Entrega",
+        actionPrompt: "Por favor confirma tu pedido contra entrega a continuación para que podamos preparar y despachar tu paquete de inmediato.",
+      },
+      urgent: {
+        greeting: (name) => `Atención ${name ? name : "Cliente"}: Se requiere confirmación para tu pedido.`,
+        orderSummaryTitle: "⚡ Urgente: Verifica tu Pedido Contra Entrega",
+        actionPrompt: "⚠️ Por favor confirma tu pedido lo antes posible para garantizar la reserva de tu producto y evitar la cancelación.",
+      },
+      formal: {
+        greeting: (name) => `Estimado/a ${name ? name : "Cliente"}, gracias por su compra.`,
+        orderSummaryTitle: "📋 Notificación de Verificación de Pedido",
+        actionPrompt: "Le solicitamos cordialmente revisar y confirmar los detalles de su pedido contra entrega para autorizar el despacho.",
+      },
+    },
     buttons: {
       confirm: "🟢 Confirmar Pedido",
       cancel: "🔴 Cancelar Pedido",
@@ -272,7 +383,7 @@ export const I18N_DICTIONARIES: Record<SupportedLocale, TemplateStrings> = {
 };
 
 /**
- * Builds the complete rich order verification text body according to resolved locale.
+ * Builds the complete rich order verification text body according to resolved locale and tone.
  */
 export function buildLocalizedOrderMessage(params: {
   locale: SupportedLocale;
@@ -282,17 +393,25 @@ export function buildLocalizedOrderMessage(params: {
   items: LineItemSummary[];
   shippingAddress?: string | null;
   formattedAmount: string;
+  tone?: BotTone;
 }): string {
-  const dict = I18N_DICTIONARIES[params.locale];
+  const dict = I18N_DICTIONARIES[params.locale] || I18N_DICTIONARIES.en;
+  const tone = params.tone || "friendly";
+  const toneDict = dict.tones?.[tone] || dict.tones?.friendly || {
+    greeting: dict.greeting,
+    orderSummaryTitle: dict.orderSummaryTitle,
+    actionPrompt: dict.actionPrompt,
+  };
+
   const itemsText = params.items.length > 0
     ? params.items.map((it) => `• ${it.title}${it.variantTitle ? ` (${it.variantTitle})` : ""} × ${it.quantity}`).join("\n")
     : "• Standard COD Order Items";
 
   const lines = [
     `*${params.storeName}*`,
-    dict.greeting(params.customerName),
+    toneDict.greeting(params.customerName),
     "",
-    `*${dict.orderSummaryTitle}*`,
+    `*${toneDict.orderSummaryTitle}*`,
     `${dict.orderNumberLabel} *${params.orderNumber}*`,
     "",
     `*${dict.itemsLabel}*`,
@@ -303,7 +422,7 @@ export function buildLocalizedOrderMessage(params: {
     "",
     `💰 *${dict.totalCodLabel}* *${params.formattedAmount}*`,
     "",
-    dict.actionPrompt,
+    toneDict.actionPrompt,
   ];
 
   return lines.join("\n");

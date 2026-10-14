@@ -637,4 +637,132 @@ export async function applyOrderEditQuantity(
   return { success: true, editedViaGraphQL: false };
 }
 
+const PRODUCT_VARIANT_IMAGE_QUERY = `#graphql
+  query GetProductVariantImage($variantId: ID!) {
+    productVariant(id: $variantId) {
+      image {
+        url
+      }
+      product {
+        featuredImage {
+          url
+        }
+      }
+    }
+  }
+`;
+
+const PRODUCT_IMAGE_QUERY = `#graphql
+  query GetProductImage($productId: ID!) {
+    product(id: $productId) {
+      featuredImage {
+        url
+      }
+    }
+  }
+`;
+
+export const NEUTRAL_BRAND_FALLBACK_IMAGE =
+  "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png";
+
+/**
+ * Resolves a high-quality product image URL for an order line item.
+ * Implements a resilient 4-tier resolution pipeline:
+ * 1. Direct lineItem.image.src from order webhook payload.
+ * 2. Shopify Admin GraphQL (variant image -> product featuredImage).
+ * 3. Shopify Admin REST API fallback (if shop and accessToken provided).
+ * 4. High-resolution neutral fallback image.
+ */
+export async function resolveLineItemImageUrl(
+  admin?: AdminGraphqlClient | null,
+  lineItem?: any,
+  shop?: string,
+  accessToken?: string,
+): Promise<string> {
+  // Step A: If lineItem.image?.src exists and is a valid URL, use it immediately
+  const directSrc = lineItem?.image?.src || lineItem?.image?.url;
+  if (typeof directSrc === "string" && directSrc.startsWith("http")) {
+    return directSrc;
+  }
+
+  // Step B: GraphQL resolution
+  if (admin?.graphql && lineItem) {
+    const rawVariantId = lineItem.variant_id ?? lineItem.variantId;
+    const rawProductId = lineItem.product_id ?? lineItem.productId;
+
+    if (rawVariantId) {
+      try {
+        const variantGid = String(rawVariantId).startsWith("gid://shopify/ProductVariant/")
+          ? String(rawVariantId)
+          : `gid://shopify/ProductVariant/${rawVariantId}`;
+
+        const res = await admin.graphql(PRODUCT_VARIANT_IMAGE_QUERY, {
+          variables: { variantId: variantGid },
+        });
+        const data = (await res.json()) as any;
+        const variantUrl = data?.data?.productVariant?.image?.url;
+        const productUrl = data?.data?.productVariant?.product?.featuredImage?.url;
+        if (variantUrl && typeof variantUrl === "string" && variantUrl.startsWith("http")) {
+          return variantUrl;
+        }
+        if (productUrl && typeof productUrl === "string" && productUrl.startsWith("http")) {
+          return productUrl;
+        }
+      } catch (err: any) {
+        console.warn(`[shopify-orders] GraphQL variant image lookup warning: ${err.message}`);
+      }
+    }
+
+    if (rawProductId) {
+      try {
+        const productGid = String(rawProductId).startsWith("gid://shopify/Product/")
+          ? String(rawProductId)
+          : `gid://shopify/Product/${rawProductId}`;
+
+        const res = await admin.graphql(PRODUCT_IMAGE_QUERY, {
+          variables: { productId: productGid },
+        });
+        const data = (await res.json()) as any;
+        const productUrl = data?.data?.product?.featuredImage?.url;
+        if (productUrl && typeof productUrl === "string" && productUrl.startsWith("http")) {
+          return productUrl;
+        }
+      } catch (err: any) {
+        console.warn(`[shopify-orders] GraphQL product image lookup warning: ${err.message}`);
+      }
+    }
+  }
+
+  // Step C: REST Fallback
+  if (shop && accessToken && lineItem) {
+    const rawProductId = lineItem.product_id ?? lineItem.productId;
+    const cleanShop = shop.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+    if (rawProductId && /^\d+$/.test(String(rawProductId))) {
+      try {
+        const restUrl = `https://${cleanShop}/admin/api/2025-01/products/${rawProductId}.json`;
+        const restRes = await fetch(restUrl, {
+          headers: {
+            "X-Shopify-Access-Token": accessToken,
+            "Content-Type": "application/json",
+          },
+          signal: AbortSignal.timeout(5000),
+        });
+        if (restRes.ok) {
+          const restData = (await restRes.json()) as any;
+          const imgUrl = restData?.product?.image?.src || restData?.product?.images?.[0]?.src;
+          if (imgUrl && typeof imgUrl === "string" && imgUrl.startsWith("http")) {
+            return imgUrl;
+          }
+        }
+      } catch (err: any) {
+        console.warn(`[shopify-orders] REST product image lookup warning: ${err.message}`);
+      }
+    }
+  }
+
+  // Step D: Neutral high-res fallback
+  return NEUTRAL_BRAND_FALLBACK_IMAGE;
+}
+
+
 

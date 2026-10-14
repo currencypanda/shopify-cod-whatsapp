@@ -7,6 +7,7 @@
 
 import {
   type SupportedLocale,
+  type BotTone,
   type LineItemSummary,
   I18N_DICTIONARIES,
   buildLocalizedOrderMessage,
@@ -505,6 +506,7 @@ export interface SendRichCodVerificationMessageParams {
   shippingAddress?: string | null;
   productImageUrl?: string | null;
   templateName?: string;
+  tone?: BotTone;
 }
 
 export async function sendWhatsAppTextMessage(
@@ -649,6 +651,7 @@ export async function sendRichCodVerificationMessage(
     items: params.items || [],
     shippingAddress: params.shippingAddress,
     formattedAmount,
+    tone: params.tone,
   });
 
   const buttons: InteractiveButtonOption[] = [

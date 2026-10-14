@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { Prisma, VerificationStatus } from "@prisma/client";
-import { authenticate } from "../shopify.server";
+import { authenticate, unauthenticated } from "../shopify.server";
 import db from "../db.server";
 import {
   DEFAULT_COUNTRY_CODE,
@@ -12,8 +12,10 @@ import {
   resolveOrderContext,
   type LineItemSummary,
   type SupportedLocale,
+  type BotTone,
 } from "../services/localization.server";
 import { checkSubscriptionQuota } from "../services/billing.server";
+import { resolveLineItemImageUrl } from "../services/shopify-orders.server";
 
 /**
  * ORDERS_CREATE webhook — subscribed in shopify.app.toml as
@@ -63,6 +65,8 @@ export interface OrderCreatePayload {
   billing_address?: OrderAddress | null;
   line_items?: Array<{
     id?: number | string;
+    variant_id?: number | string;
+    product_id?: number | string;
     title?: string;
     quantity?: number;
     price?: string;
@@ -163,6 +167,7 @@ interface DispatchArgs {
   items?: LineItemSummary[];
   shippingAddress?: string | null;
   productImageUrl?: string | null;
+  tone?: BotTone;
 }
 
 /** Sends the rich WhatsApp message and records the outcome. Never throws. */
@@ -184,6 +189,7 @@ async function dispatchVerificationMessage(args: DispatchArgs): Promise<void> {
       items: args.items,
       shippingAddress: args.shippingAddress,
       productImageUrl: args.productImageUrl,
+      tone: args.tone,
     }));
   } catch (error) {
     console.error(
@@ -273,7 +279,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       presentmentCurrency: order.presentment_currency,
     });
 
-    const activeLocale = resolvedContext.locale;
+    let activeLocale = resolvedContext.locale;
+    if (config.botLanguage && config.botLanguage !== "auto") {
+      const configuredLocale = config.botLanguage.toLowerCase().trim() as SupportedLocale;
+      if (["en", "ar", "es", "ur"].includes(configuredLocale)) {
+        activeLocale = configuredLocale;
+      }
+    }
+    const activeTone = (config.botTone || "friendly") as BotTone;
     const activeCurrency = resolvedContext.currency;
     const e164Phone = resolvedContext.normalizedPhone || (rawPhone ? formatPhoneNumber(rawPhone, countryCode) : null);
 
@@ -284,8 +297,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       variantTitle: li.variant_title,
     }));
 
-    const FALLBACK_PRODUCT_IMAGE = "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png";
-    const productImageUrl = order.line_items?.[0]?.image?.src || FALLBACK_PRODUCT_IMAGE;
+    // Resilient GraphQL / REST Image Resolution Pipeline
+    let admin: any = null;
+    let session: any = null;
+    try {
+      ({ admin, session } = await unauthenticated.admin(shop));
+    } catch (adminErr: any) {
+      console.warn(`[orders/create] Could not obtain offline admin context for ${shop}: ${adminErr.message}`);
+    }
+
+    const productImageUrl = await resolveLineItemImageUrl(
+      admin,
+      order.line_items?.[0],
+      shop,
+      session?.accessToken,
+    );
     const addressParts = [
       order.shipping_address?.address1,
       order.shipping_address?.city,
@@ -351,6 +377,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       items,
       shippingAddress,
       productImageUrl,
+      tone: activeTone,
     });
   } catch (error) {
     // Always acknowledge so Shopify doesn't retry-storm; the error is logged for follow-up.
