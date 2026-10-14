@@ -17,15 +17,14 @@
       "Auto-Restock & Inventory Recovery Engine",
       "Courier Loss-Saved ROI Financial Dashboard"
     ],
-    searchTags: "Cash on Delivery, COD Verification, WhatsApp, RTO Reduction, Order Confirmation, Fraud Prevention, Auto Cancel",
+    searchTags: "Cash on Delivery, COD Verification, WhatsApp, RTO Reduction, Order Confirmation, Fraud Prevention, Auto Cancel, Address Edit",
     testStore: "ahmed-cod-test.myshopify.com",
-    privacyUrl: "https://agencies-fur-dealt-devices.trycloudflare.com/docs/privacy-policy.html",
-    tosUrl: "https://agencies-fur-dealt-devices.trycloudflare.com/docs/terms-of-service.html",
+    privacyUrl: "https://swiftcod-whatsapp-verify.onrender.com/privacy",
+    tosUrl: "https://swiftcod-whatsapp-verify.onrender.com/terms",
     pricing: [
-      { name: "Starter", price: "0.00", terms: "20 verified orders/mo included. Core auto-tagging." },
-      { name: "Launch Special", price: "5.99", terms: "400 verified orders/mo ($0.015 overage). 7-day trial with $1.00 verification fee." },
-      { name: "Growth Plan", price: "14.99", terms: "1,500 verified orders/mo ($0.010 overage). 7-day 100% free trial." },
-      { name: "Scale / Pro Plan", price: "39.99", terms: "5,000 verified orders/mo ($0.006 overage). Priority WhatsApp dispatch." }
+      { name: "Starter", price: "0.00", terms: "50 verified orders/mo included. 1-Click WhatsApp buttons, standard order tagging." },
+      { name: "Pro Tier", price: "29.00", terms: "1,000 verified orders/mo. Multi-Market currency, address modification & restock engine." },
+      { name: "Enterprise Tier", price: "79.00", terms: "Unlimited verified orders. Dedicated high-throughput routes, custom SLAs." }
     ],
     detailedDescription: `### Stop Losing Money to Fake Cash on Delivery (COD) Orders and RTO Penalties
 
@@ -36,7 +35,7 @@ Cash on Delivery drives e-commerce across emerging markets, but Return-to-Origin
 SwiftCOD replaces slow, expensive phone call centers with an instant, interactive WhatsApp verification flow:
 
 1. **Instant Checkout Capture:** As soon as a customer places a Cash on Delivery order, SwiftCOD normalizes their phone number to international E.164 standard and triggers a branded WhatsApp notification.
-2. **Interactive 1-Click Decision:** The customer taps native quick-reply buttons — **[🟢 Confirm Order]** or **[🔴 Cancel Order]** — with zero typing, no passwords, and no login required.
+2. **Interactive 1-Click Decision:** The customer taps native quick-reply buttons — **[🟢 Confirm Order]**, **[🔴 Cancel Order]**, or **[✏️ Edit Address]** — with zero typing, no passwords, and no login required.
 3. **Automated Warehouse Tagging:** Confirmed orders receive the \`COD-Confirmed\` tag in Shopify admin so warehouse staff can pack and dispatch with complete confidence.
 4. **Auto-Cancel & Restock Automation:** Cancelled or rejected orders are stamped with \`COD-Cancelled\`, automatically cancelled in Shopify with payment marked voided, and line items immediately restocked to active inventory.
 5. **Auto-Expiry for Unattended Orders:** Orders unverified after 12h, 24h, or 48h are tagged \`COD-Expired\` to prevent dispatching parcels to ghost buyers.
@@ -48,15 +47,19 @@ SwiftCOD replaces slow, expensive phone call centers with an instant, interactiv
 • **GDPR & CCPA Certified:** Complete compliance with privacy standards and mandatory Shopify data protection webhooks.`,
     reviewerNotes: `SwiftCOD: WhatsApp Verify Reviewer QA Testing Instructions:
 - Test Development Store: ahmed-cod-test.myshopify.com
-- Tunnel Gateway: https://agencies-fur-dealt-devices.trycloudflare.com
-- Health Check: https://agencies-fur-dealt-devices.trycloudflare.com/api/health (HTTP 200 OK)
-- Privacy Compliance Endpoints: /webhooks/customers/data_request, /webhooks/customers/redact, /webhooks/shop/redact
+- Production Cloud URL: https://swiftcod-whatsapp-verify.onrender.com
+- Health Check Probe: https://swiftcod-whatsapp-verify.onrender.com/api/health (HTTP 200 OK)
+- Privacy Compliance Endpoints:
+  * /api/webhooks/customers-data-request
+  * /api/webhooks/customers-redact
+  * /api/webhooks/shop-redact
 - Test Steps:
   1. Open embedded app in ahmed-cod-test admin.
   2. Place a test order with Cash on Delivery payment method.
-  3. Order appears as PENDING in SwiftCOD dashboard.
+  3. Order appears in SwiftCOD dashboard.
   4. WhatsApp interactive quick reply triggers CONFIRM -> tags COD-Confirmed.
-  5. WhatsApp CANCEL triggers auto-cancellation and restores inventory (+1 restock).`
+  5. WhatsApp CANCEL triggers auto-cancellation and restores inventory (+1 restock).
+  6. Interactive EDIT_ADDRESS updates shipping address in Shopify Admin and tags COD-Address-Modified.`
   };
 
   // Helper to trigger React / Polaris synthetic input events

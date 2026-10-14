@@ -131,10 +131,11 @@ All graphical assets are rendered in standard Shopify App Store aspect ratios an
 
 ## 5. Privacy, Legal & Reviewer Instructions
 
-* **Privacy Policy URL:** `https://agencies-fur-dealt-devices.trycloudflare.com/docs/privacy-policy.html`  
+* **Privacy Policy URL:** `https://swiftcod-whatsapp-verify.onrender.com/privacy`  
   *(Markdown source: [`docs/PRIVACY_POLICY.md`](file:///e:/cod-whatsapp-verify/docs/PRIVACY_POLICY.md))*
-* **Terms of Service URL:** `https://agencies-fur-dealt-devices.trycloudflare.com/docs/terms-of-service.html`  
+* **Terms of Service URL:** `https://swiftcod-whatsapp-verify.onrender.com/terms`  
   *(Markdown source: [`docs/TERMS_OF_SERVICE.md`](file:///e:/cod-whatsapp-verify/docs/TERMS_OF_SERVICE.md))*
 * **Shopify QA Review Instructions:** [`docs/SHOPIFY_REVIEW_INSTRUCTIONS.md`](file:///e:/cod-whatsapp-verify/docs/SHOPIFY_REVIEW_INSTRUCTIONS.md)
-* **Health Check Endpoint:** `https://agencies-fur-dealt-devices.trycloudflare.com/api/health`
-* **Mandatory Webhook Handshake:** `https://agencies-fur-dealt-devices.trycloudflare.com/api/whatsapp/webhook`
+* **Health Check Endpoint:** `https://swiftcod-whatsapp-verify.onrender.com/api/health`
+* **Mandatory Webhook Handshake:** `https://swiftcod-whatsapp-verify.onrender.com/api/whatsapp/webhook`
+* **Live Production Cloud URL:** `https://swiftcod-whatsapp-verify.onrender.com`
