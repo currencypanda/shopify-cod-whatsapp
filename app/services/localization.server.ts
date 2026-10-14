@@ -107,7 +107,17 @@ export function normalizePhoneNumber(rawPhone: string, defaultCountry: string = 
  * Comprehensive Order Resolution Engine combining country, locale, currency and phone formatting.
  */
 export function resolveOrderContext(input: OrderInputPayload): LocalizedOrderContext {
-  const countryCode = (input.shippingCountryCode || "PK").toUpperCase().trim();
+  let countryCode = (input.shippingCountryCode || "").toUpperCase().trim();
+  if (!countryCode && input.customerPhone) {
+    try {
+      const parsed = parsePhoneNumber(input.customerPhone);
+      if (parsed?.country) {
+        countryCode = parsed.country;
+      }
+    } catch {}
+  }
+  if (!countryCode) countryCode = "PK";
+
   const locale = resolveLocale(countryCode, input.customerLocale);
   const currency = (input.presentmentCurrency || input.currency || "PKR").toUpperCase().trim();
   const formattedAmount = formatCurrency(input.totalPrice ?? 0, currency, locale);
