@@ -288,9 +288,10 @@ async function runDeepQaSuite() {
   console.log(`\n${BOLD}5. Shopify Billing Engine & Tier Enforcement${RESET}`);
 
   // 5.1 Plan tier definitions
-  assert(BILLING_PLANS.STARTER.price === 0 && BILLING_PLANS.STARTER.orderLimit === 50, "Starter plan configured for $0 and 50 orders");
-  assert(BILLING_PLANS.PRO.price === 29.0 && BILLING_PLANS.PRO.orderLimit === 1000, "Pro plan configured for $29 and 1,000 orders");
-  assert(BILLING_PLANS.ENTERPRISE.price === 79.0 && BILLING_PLANS.ENTERPRISE.orderLimit === -1, "Enterprise plan configured for $79 and unlimited orders");
+  assert(BILLING_PLANS.STARTER.price === 0 && BILLING_PLANS.STARTER.orderLimit === 50 && BILLING_PLANS.STARTER.trialDays === 0, "Starter plan configured for $0 and 50 orders (0 trial days)");
+  assert(BILLING_PLANS.GROWTH.price === 9.99 && BILLING_PLANS.GROWTH.orderLimit === 500 && BILLING_PLANS.GROWTH.trialDays === 7, "Growth plan configured for $9.99, 500 orders, and 7-day trial");
+  assert(BILLING_PLANS.ENTERPRISE.price === 24.99 && BILLING_PLANS.ENTERPRISE.orderLimit === -1 && BILLING_PLANS.ENTERPRISE.trialDays === 7, "Enterprise plan configured for $24.99, unlimited orders, and 7-day trial");
+  assert(BILLING_PLANS.PRO.price === 9.99, "Legacy 'PRO' identifier aliases 'GROWTH' at $9.99");
 
   // 5.2 Subscription Quota Check
   const quotaCheck = await checkSubscriptionQuota(testShop);

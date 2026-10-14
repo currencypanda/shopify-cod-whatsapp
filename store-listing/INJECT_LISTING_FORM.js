@@ -24,9 +24,9 @@
     privacyUrl: "https://swiftcod-whatsapp-verify.onrender.com/privacy",
     tosUrl: "https://swiftcod-whatsapp-verify.onrender.com/terms",
     pricing: [
-      { name: "Starter", price: "0.00", terms: "50 verified orders/mo included. 1-Click WhatsApp buttons, standard order tagging." },
-      { name: "Pro Tier", price: "29.00", terms: "1,000 verified orders/mo. Multi-Market currency, address modification & restock engine." },
-      { name: "Enterprise Tier", price: "79.00", terms: "Unlimited verified orders. Dedicated high-throughput routes, custom SLAs." }
+      { name: "Free Starter", price: "0.00", terms: "50 verified orders/mo included. 1-Click WhatsApp buttons, standard order tagging. Free forever." },
+      { name: "Growth Launch Deal", price: "9.99", terms: "Includes 7-Day Free Trial. Up to 500 orders/mo. Roman Urdu + English + Arabic, product image thumbnails, multi-tone engine, GPS pins." },
+      { name: "Scale / Enterprise", price: "24.99", terms: "Includes 7-Day Free Trial. Unlimited verified orders. Priority webhooks, courier loss analytics, dedicated support." }
     ],
     detailedDescription: `### Stop Losing Money to Fake Cash on Delivery (COD) Orders and RTO Penalties
 

@@ -265,8 +265,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   }
 
   if (intent === "upgrade_plan") {
-    const planId = formData.get("planId")?.toString() as "PRO" | "ENTERPRISE";
-    if (planId !== "PRO" && planId !== "ENTERPRISE") {
+    const rawPlanId = formData.get("planId")?.toString();
+    const planId = (rawPlanId === "PRO" ? "GROWTH" : rawPlanId) as "GROWTH" | "ENTERPRISE";
+    if (planId !== "GROWTH" && planId !== "ENTERPRISE") {
       return json<ActionData>(
         { success: false, error: "Invalid plan selected" },
         { status: 400 },
@@ -281,7 +282,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       shop,
       planId,
       returnUrl,
-      isTest: true,
+      isTest: process.env.NODE_ENV !== "production",
     });
 
     if (result.errors && result.errors.length > 0) {
@@ -293,7 +294,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     return json<ActionData>({
       success: true,
-      message: `Subscription initiated for ${planId} plan.`,
+      message: `Subscription initiated for ${planId} plan with 7-Day Free Trial.`,
       confirmationUrl: result.confirmationUrl,
     });
   }
@@ -550,7 +551,7 @@ export default function Index() {
                   tone={
                     metrics.billingTier === "ENTERPRISE"
                       ? "magic"
-                      : metrics.billingTier === "PRO"
+                      : metrics.billingTier === "GROWTH" || metrics.billingTier === "PRO"
                         ? "success"
                         : "info"
                   }
@@ -560,8 +561,8 @@ export default function Index() {
               </InlineStack>
               <Text as="span" variant="bodySm" tone="subdued">
                 {metrics.currentPlan.orderLimit === -1
-                  ? "Unlimited verifications included"
-                  : `${metrics.monthlyUsageCount} / ${metrics.currentPlan.orderLimit} verifications used this month`}
+                  ? "Unlimited verifications included (Active)"
+                  : `${metrics.monthlyUsageCount} / ${metrics.currentPlan.orderLimit} verifications used this month (${Math.max(0, metrics.currentPlan.orderLimit - metrics.monthlyUsageCount)} remaining)`}
               </Text>
             </InlineStack>
 
@@ -571,85 +572,154 @@ export default function Index() {
               size="small"
             />
 
-            <InlineGrid columns={{ xs: 1, sm: 3 }} gap="300">
+            <InlineGrid columns={{ xs: 1, sm: 3 }} gap="400">
+              {/* Plan 1: Free Starter */}
               <Box
-                padding="300"
+                padding="400"
                 borderWidth="025"
-                borderColor="border"
+                borderColor={metrics.billingTier === "STARTER" ? "border-emphasis" : "border"}
                 borderRadius="200"
+                background={metrics.billingTier === "STARTER" ? "bg-surface-secondary" : "bg-surface"}
               >
-                <BlockStack gap="100">
-                  <Text as="h3" variant="headingSm">
-                    Starter Plan ($0/mo)
-                  </Text>
+                <BlockStack gap="200">
+                  <InlineStack align="space-between" blockAlign="center">
+                    <Text as="h3" variant="headingSm" fontWeight="bold">
+                      Free Starter
+                    </Text>
+                    {metrics.billingTier === "STARTER" ? (
+                      <Badge tone="info">Active Plan</Badge>
+                    ) : null}
+                  </InlineStack>
+
+                  <InlineStack gap="100" blockAlign="baseline">
+                    <Text as="span" variant="headingLg" fontWeight="bold">
+                      $0.00
+                    </Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      / mo (Free Forever)
+                    </Text>
+                  </InlineStack>
+
                   <Text as="p" variant="bodySm" tone="subdued">
-                    50 verifications/mo • 1-Click WhatsApp buttons
+                    50 verifications/mo • Standard templates • Basic order tagging • Single language
                   </Text>
-                  {metrics.billingTier === "STARTER" ? (
-                    <Badge tone="info">Current Active Plan</Badge>
-                  ) : null}
+                  <Text as="span" variant="bodyXs" tone="subdued">
+                    Instant activation • No credit card required
+                  </Text>
                 </BlockStack>
               </Box>
 
+              {/* Plan 2: Growth Launch Deal */}
               <Box
-                padding="300"
+                padding="400"
                 borderWidth="025"
-                borderColor="border"
+                borderColor={
+                  metrics.billingTier === "GROWTH" || metrics.billingTier === "PRO"
+                    ? "border-emphasis"
+                    : "border"
+                }
                 borderRadius="200"
+                background={
+                  metrics.billingTier === "GROWTH" || metrics.billingTier === "PRO"
+                    ? "bg-surface-secondary"
+                    : "bg-surface"
+                }
               >
-                <BlockStack gap="100">
+                <BlockStack gap="200">
                   <InlineStack align="space-between" blockAlign="center">
-                    <Text as="h3" variant="headingSm">
-                      Pro Tier ($29/mo)
+                    <Text as="h3" variant="headingSm" fontWeight="bold">
+                      Growth Launch Deal
                     </Text>
-                    {metrics.billingTier === "PRO" ? (
-                      <Badge tone="success">Current Active</Badge>
-                    ) : (
+                    <Badge tone="success">Launch Offer</Badge>
+                  </InlineStack>
+
+                  <InlineStack gap="150" blockAlign="baseline">
+                    <Text as="span" variant="bodySm" tone="subdued" textDecorationLine="line-through">
+                      $29.00
+                    </Text>
+                    <Text as="span" variant="headingLg" fontWeight="bold">
+                      $9.99
+                    </Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      / mo
+                    </Text>
+                  </InlineStack>
+
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Up to 500 orders/mo • Roman Urdu + Arabic + English • Product image thumbnails • Multi-tone engine • GPS Location Pins • Auto-cancel & Restock
+                  </Text>
+
+                  {metrics.billingTier === "GROWTH" || metrics.billingTier === "PRO" ? (
+                    <Box paddingBlockStart="100">
+                      <Badge tone="success">Active Plan</Badge>
+                    </Box>
+                  ) : (
+                    <BlockStack gap="100">
                       <fetcher.Form method="post">
                         <input type="hidden" name="intent" value="upgrade_plan" />
-                        <input type="hidden" name="planId" value="PRO" />
-                        <Button submit size="micro" variant="primary">
-                          Upgrade
+                        <input type="hidden" name="planId" value="GROWTH" />
+                        <Button submit variant="primary" fullWidth loading={isSubmitting}>
+                          Start 7-Day Free Trial
                         </Button>
                       </fetcher.Form>
-                    )}
-                  </InlineStack>
-                  <Text as="p" variant="bodySm" tone="subdued">
-                    1,000 orders • Multi-market & Address edit • Auto-restock
-                  </Text>
+                      <Text as="p" variant="bodyXs" tone="subdued">
+                        Includes 7-Day Free Trial • Renews automatically every 30 days • Cancel anytime in 1 click.
+                      </Text>
+                    </BlockStack>
+                  )}
                 </BlockStack>
               </Box>
 
+              {/* Plan 3: Scale / Enterprise */}
               <Box
-                padding="300"
+                padding="400"
                 borderWidth="025"
-                borderColor="border"
+                borderColor={metrics.billingTier === "ENTERPRISE" ? "border-emphasis" : "border"}
                 borderRadius="200"
+                background={metrics.billingTier === "ENTERPRISE" ? "bg-surface-secondary" : "bg-surface"}
               >
-                <BlockStack gap="100">
+                <BlockStack gap="200">
                   <InlineStack align="space-between" blockAlign="center">
-                    <Text as="h3" variant="headingSm">
-                      Enterprise Tier ($79/mo)
+                    <Text as="h3" variant="headingSm" fontWeight="bold">
+                      Scale / Enterprise
                     </Text>
-                    {metrics.billingTier === "ENTERPRISE" ? (
-                      <Badge tone="magic">Current Active</Badge>
-                    ) : (
+                    <Badge tone="magic">Best Value</Badge>
+                  </InlineStack>
+
+                  <InlineStack gap="150" blockAlign="baseline">
+                    <Text as="span" variant="bodySm" tone="subdued" textDecorationLine="line-through">
+                      $79.00
+                    </Text>
+                    <Text as="span" variant="headingLg" fontWeight="bold">
+                      $24.99
+                    </Text>
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      / mo
+                    </Text>
+                  </InlineStack>
+
+                  <Text as="p" variant="bodySm" tone="subdued">
+                    Unlimited orders • Everything in Growth • Priority webhook processing • Custom return courier loss analytics • Dedicated onboarding support
+                  </Text>
+
+                  {metrics.billingTier === "ENTERPRISE" ? (
+                    <Box paddingBlockStart="100">
+                      <Badge tone="magic">Active Plan</Badge>
+                    </Box>
+                  ) : (
+                    <BlockStack gap="100">
                       <fetcher.Form method="post">
-                        <input
-                          type="hidden"
-                          name="intent"
-                          value="upgrade_plan"
-                        />
+                        <input type="hidden" name="intent" value="upgrade_plan" />
                         <input type="hidden" name="planId" value="ENTERPRISE" />
-                        <Button submit size="micro" variant="primary">
-                          Upgrade
+                        <Button submit variant="primary" fullWidth loading={isSubmitting}>
+                          Start 7-Day Free Trial
                         </Button>
                       </fetcher.Form>
-                    )}
-                  </InlineStack>
-                  <Text as="p" variant="bodySm" tone="subdued">
-                    Unlimited orders • High-throughput route • Custom SLAs
-                  </Text>
+                      <Text as="p" variant="bodyXs" tone="subdued">
+                        Includes 7-Day Free Trial • Renews automatically every 30 days • Cancel anytime in 1 click.
+                      </Text>
+                    </BlockStack>
+                  )}
                 </BlockStack>
               </Box>
             </InlineGrid>

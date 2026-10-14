@@ -1,93 +1,114 @@
 import db from "../db.server";
 
-export type BillingTierId = "STARTER" | "PRO" | "ENTERPRISE";
+export type BillingTierId = "STARTER" | "GROWTH" | "ENTERPRISE" | "PRO";
+
+export const PLAN_STARTER = "STARTER";
+export const PLAN_GROWTH = "GROWTH";
+export const PLAN_ENTERPRISE = "ENTERPRISE";
 
 export interface BillingPlanDetails {
-  id: BillingTierId;
+  id: "STARTER" | "GROWTH" | "ENTERPRISE";
   name: string;
   price: number; // in USD
+  previousPrice?: number; // for UI strike-through display
   orderLimit: number; // -1 for unlimited
   interval: "EVERY_30_DAYS";
+  trialDays: number;
+  badge?: string;
   description: string;
   features: string[];
 }
 
-export const BILLING_PLANS: Record<BillingTierId, BillingPlanDetails> = {
+export const BILLING_PLANS: Record<"STARTER" | "GROWTH" | "ENTERPRISE" | "PRO", BillingPlanDetails> = {
   STARTER: {
     id: "STARTER",
-    name: "Starter (Free)",
-    price: 0,
+    name: "Free Starter",
+    price: 0.0,
     orderLimit: 50,
     interval: "EVERY_30_DAYS",
+    trialDays: 0,
     description: "Ideal for emerging stores starting out with Cash on Delivery verification.",
     features: [
       "Up to 50 COD verifications per month",
-      "Automated 1-Click WhatsApp buttons",
-      "Shopify Order Auto-Tagging",
-      "Basic Analytics & Loss Saved tracker",
+      "Standard WhatsApp verification templates",
+      "Basic order tagging (COD-Confirmed, COD-Cancelled)",
+      "Single language support",
+      "Instant activation, no credit card required",
     ],
   },
-  PRO: {
-    id: "PRO",
-    name: "Pro Tier",
-    price: 29.0,
-    orderLimit: 1000,
+  GROWTH: {
+    id: "GROWTH",
+    name: "Growth Launch Deal",
+    price: 9.99,
+    previousPrice: 29.0,
+    orderLimit: 500,
     interval: "EVERY_30_DAYS",
-    description: "Built for scaling e-commerce brands needing multi-market speed and order editing.",
+    trialDays: 7,
+    badge: "Launch Offer",
+    description: "High-converting multi-lingual verification and order editing for growing DTC stores.",
     features: [
-      "Up to 1,000 COD verifications per month",
-      "Multi-Market & GCC Currency formatting",
-      "Interactive WhatsApp Address & Slot Editing",
-      "Auto-Restock & Inventory Recovery engine",
-      "Custom Bot Tone & Multi-Language templates",
+      "Up to 500 COD verifications per month",
+      "High-converting Roman Urdu + English + Arabic",
+      "Dynamic Product Image thumbnails",
+      "Multi-tone engine (friendly, formal, urgent)",
+      "GPS Location Pin capture",
+      "Auto-cancel & Restock engine",
     ],
   },
   ENTERPRISE: {
     id: "ENTERPRISE",
-    name: "Enterprise Tier",
-    price: 79.0,
+    name: "Scale / Enterprise",
+    price: 24.99,
+    previousPrice: 79.0,
     orderLimit: -1, // Unlimited
     interval: "EVERY_30_DAYS",
-    description: "For high-volume merchants with dedicated throughput and custom SLAs.",
+    trialDays: 7,
+    badge: "Best Value",
+    description: "Unlimited high-velocity verification, priority webhooks, and deep ROI protection.",
     features: [
       "Unlimited COD verifications",
-      "Dedicated High-Throughput WhatsApp Routes",
-      "Custom Auto-Tagging & Webhook Triggers",
-      "Interactive Delivery Slot & Location Picker",
-      "24/7 Dedicated Support & Custom SLA",
+      "Everything in Growth included",
+      "Priority webhook processing",
+      "Custom return courier loss analytics",
+      "Dedicated onboarding & 24/7 priority support",
     ],
+  },
+  // Legacy alias mapping: "PRO" maps seamlessly to GROWTH
+  get PRO() {
+    return this.GROWTH;
   },
 };
 
-const APP_SUBSCRIPTION_CREATE_MUTATION = `#graphql
+export const APP_SUBSCRIPTION_CREATE_MUTATION = `#graphql
   mutation AppSubscriptionCreate(
     $name: String!
     $lineItems: [AppSubscriptionLineItemInput!]!
     $returnUrl: URL!
+    $trialDays: Int!
     $test: Boolean
   ) {
     appSubscriptionCreate(
       name: $name
-      lineItems: $lineItems
       returnUrl: $returnUrl
+      trialDays: $trialDays
       test: $test
+      lineItems: $lineItems
     ) {
+      appSubscription {
+        id
+        status
+        currentPeriodEnd
+      }
+      confirmationUrl
       userErrors {
         field
         message
-      }
-      confirmationUrl
-      appSubscription {
-        id
-        name
-        status
-        test
       }
     }
   }
 `;
 
-const CURRENT_APP_INSTALLATION_QUERY = `#graphql
+export const CURRENT_APP_INSTALLATION_QUERY = `#graphql
   query CurrentAppInstallation {
     currentAppInstallation {
       activeSubscriptions {
@@ -117,27 +138,46 @@ const CURRENT_APP_INSTALLATION_QUERY = `#graphql
 export interface CreateSubscriptionInput {
   admin: any;
   shop: string;
-  planId: "PRO" | "ENTERPRISE";
+  planId: "GROWTH" | "ENTERPRISE" | "PRO";
   returnUrl: string;
   isTest?: boolean;
 }
 
 /**
- * Initiates a Shopify Recurring Application Charge using GraphQL appSubscriptionCreate.
- * Supports test mode for development stores and non-production testing.
+ * Automated Deduction Lifecycle (Shopify Billing API Architecture):
+ * 
+ * 1. Initial Authorization:
+ *    When the merchant approves the app subscription on Shopify's confirmationUrl,
+ *    Shopify natively captures and validates the merchant's payment method (credit card / PayPal).
+ *    No immediate charge is posted because trialDays (7) is specified.
+ * 
+ * 2. 7-Day Risk-Free Trial:
+ *    The subscription enters "ACTIVE" status with a 7-day trial period. The merchant can
+ *    verify orders, customize bot tones, and test GPS pin capture risk-free.
+ * 
+ * 3. Automated Rollover & Recurring Deductions:
+ *    If the merchant does not uninstall the app or downgrade before Day 7 expires,
+ *    Shopify automatically charges the merchant's authorized payment method on Day 8 ($9.99 or $24.99).
+ *    Subsequent charges are deducted automatically every 30 days ("EVERY_30_DAYS")
+ *    without requiring manual merchant re-approval or extra confirmation prompts.
+ * 
+ * 4. 1-Click Cancellation / Downgrade:
+ *    If the merchant downgrades to the Free Starter plan or uninstalls the app prior to trial expiration,
+ *    Shopify instantly halts the subscription and zero charges are incurred.
  */
 export async function createAppSubscription({
   admin,
   shop,
   planId,
   returnUrl,
-  isTest = true,
+  isTest = process.env.NODE_ENV !== "production",
 }: CreateSubscriptionInput): Promise<{
   confirmationUrl?: string;
   subscriptionId?: string;
   errors?: string[];
 }> {
-  const plan = BILLING_PLANS[planId];
+  const normalizedPlanId = planId === "PRO" ? "GROWTH" : planId;
+  const plan = BILLING_PLANS[normalizedPlanId];
   if (!plan) {
     return { errors: [`Unknown billing plan ${planId}`] };
   }
@@ -146,6 +186,7 @@ export async function createAppSubscription({
     variables: {
       name: `SwiftCOD - ${plan.name}`,
       returnUrl,
+      trialDays: plan.trialDays, // 7-day risk-free trial on paid plans
       test: isTest,
       lineItems: [
         {
@@ -170,9 +211,8 @@ export async function createAppSubscription({
         confirmationUrl?: string;
         appSubscription?: {
           id: string;
-          name: string;
           status: string;
-          test: boolean;
+          currentPeriodEnd?: string | null;
         };
       };
     };
@@ -187,9 +227,10 @@ export async function createAppSubscription({
   const subscriptionId = json.data?.appSubscriptionCreate?.appSubscription?.id;
 
   // Persist intended subscription tier in ShopConfig
-  await db.shopConfig.update({
+  await db.shopConfig.upsert({
     where: { shop },
-    data: { subscriptionTier: planId },
+    update: { subscriptionTier: normalizedPlanId },
+    create: { shop, subscriptionTier: normalizedPlanId },
   }).catch((err) => {
     console.warn(`[billing] Could not pre-update shopConfig tier for ${shop}:`, err.message);
   });
@@ -226,13 +267,14 @@ export async function getShopBillingTier(shop: string): Promise<BillingTierId> {
     select: { subscriptionTier: true },
   });
 
-  const tier = (config?.subscriptionTier as BillingTierId) || "STARTER";
+  const rawTier = (config?.subscriptionTier as BillingTierId) || "STARTER";
+  const tier = rawTier === "PRO" ? "GROWTH" : rawTier;
   return BILLING_PLANS[tier] ? tier : "STARTER";
 }
 
 /**
  * Subscription Quota Validation Middleware.
- * Enforces usage limits (e.g. 50 orders/month for Starter plan) before dispatching WhatsApp.
+ * Enforces usage limits (e.g. 50 orders/month for Starter, 500 for Growth) before dispatching WhatsApp.
  */
 export async function checkSubscriptionQuota(shop: string): Promise<{
   allowed: boolean;
