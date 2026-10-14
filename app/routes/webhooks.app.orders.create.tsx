@@ -13,6 +13,7 @@ import {
   type LineItemSummary,
   type SupportedLocale,
 } from "../services/localization.server";
+import { checkSubscriptionQuota } from "../services/billing.server";
 
 /**
  * ORDERS_CREATE webhook — subscribed in shopify.app.toml as
@@ -242,6 +243,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const config = await db.shopConfig.findUnique({ where: { shop } });
     if (!config || !config.isEnabled) return ok();
 
+    // Enforce SaaS plan limits (e.g. Starter tier 50 orders/month)
+    const quota = await checkSubscriptionQuota(shop);
+    if (!quota.allowed) {
+      console.warn(
+        `[orders/create] Verification skipped for ${shop} order ${order.name || order.id}: ${quota.reason}`,
+      );
+      return ok();
+    }
+
     const shopifyOrderId = order.admin_graphql_api_id ?? `gid://shopify/Order/${order.id}`;
     const orderNumber = order.name ?? `#${order.order_number ?? order.id}`;
     const totalAmount = order.total_price ?? "0";
@@ -274,7 +284,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       variantTitle: li.variant_title,
     }));
 
-    const productImageUrl = order.line_items?.[0]?.image?.src || null;
+    const FALLBACK_PRODUCT_IMAGE = "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-image_large.png";
+    const productImageUrl = order.line_items?.[0]?.image?.src || FALLBACK_PRODUCT_IMAGE;
     const addressParts = [
       order.shipping_address?.address1,
       order.shipping_address?.city,

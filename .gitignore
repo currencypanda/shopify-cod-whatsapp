@@ -14,9 +14,8 @@ database.sqlite
 .env
 .env.*
 
-
-
-
+scratch/*.mjs
+scratch/*.js
 
 /extensions/*/dist
 

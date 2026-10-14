@@ -47,6 +47,11 @@ model ShopConfig {
   autoCancelOnCustomerCancel Boolean             @default(true)
   autoExpiryHours            Int                 @default(24)
   autoTagExpired             String              @default("COD-Expired")
+  autoTagAddressModified     String              @default("COD-Address-Modified")
+  autoTagHold                String              @default("COD-Hold")
+  botTone                    String?             @default("friendly")
+  botLanguage                String?             @default("auto")
+  subscriptionTier           String              @default("STARTER")
   createdAt                  DateTime            @default(now())
   updatedAt                  DateTime            @updatedAt
   verifications              VerificationOrder[]
