@@ -9,10 +9,12 @@
   console.log("%c🚀 Starting SwiftCOD App Store Listing Form Injection...", "color: #008060; font-size: 16px; font-weight: bold;");
 
   const DATA = {
-    appName: "SwiftCOD: WhatsApp Verify",
-    tagline: "Stop fake COD orders & cut RTO with 1-click WhatsApp verify",
+    appName: "SwiftCOD: WhatsApp Verify & Edit",
+    tagline: "Automate COD verification, conversational address edit & RTO drop",
+    taglineShort: "Automate COD verification, address edit & RTO drop",
     features: [
       "Automated WhatsApp 1-Click Confirmation & Cancellation",
+      "Conversational Address Modification & GPS Geolocation Drop",
       "Real-time Shopify Admin Order Tagging (COD-Confirmed / COD-Cancelled)",
       "Auto-Restock & Inventory Recovery Engine",
       "Courier Loss-Saved ROI Financial Dashboard"
@@ -104,8 +106,10 @@ SwiftCOD replaces slow, expensive phone call centers with an instant, interactiv
   // 2. Tagline
   const taglineInput = document.querySelector('input[name*="tagline"], input[name*="subtitle"], input[placeholder*="tagline" i], input[placeholder*="catchy" i]');
   if (taglineInput) {
-    results.tagline = setNativeValue(taglineInput, DATA.tagline);
-    console.log("✔ Injected Tagline:", DATA.tagline);
+    const max = taglineInput.maxLength && taglineInput.maxLength > 0 ? taglineInput.maxLength : 60;
+    const val = DATA.tagline.length <= max ? DATA.tagline : (DATA.taglineShort || DATA.tagline.slice(0, max));
+    results.tagline = setNativeValue(taglineInput, val);
+    console.log("✔ Injected Tagline:", val);
   }
 
   // 3. Detailed Description
@@ -155,6 +159,23 @@ SwiftCOD replaces slow, expensive phone call centers with an instant, interactiv
   if (reviewerInput) {
     results.reviewerNotes = setNativeValue(reviewerInput, DATA.reviewerNotes);
     console.log("✔ Injected Reviewer Notes");
+  }
+
+  // 8. Pricing Plans (if pricing inputs are present in current tab/page)
+  const planRows = Array.from(document.querySelectorAll('[data-testid*="plan"], tr:has(input[name*="plan"]), div:has(> input[name*="price"])'));
+  if (planRows.length > 0) {
+    DATA.pricing.forEach((plan, idx) => {
+      const row = planRows[idx];
+      if (row) {
+        const nameIn = row.querySelector('input[name*="name"], input[placeholder*="plan" i]');
+        const priceIn = row.querySelector('input[name*="price"], input[placeholder*="price" i]');
+        const termsIn = row.querySelector('input[name*="terms"], textarea[name*="terms"], input[placeholder*="term" i]');
+        if (nameIn) setNativeValue(nameIn, plan.name);
+        if (priceIn) setNativeValue(priceIn, plan.price);
+        if (termsIn) setNativeValue(termsIn, plan.terms);
+      }
+    });
+    console.log("✔ Injected Pricing Plans");
   }
 
   console.log("%c=======================================================", "color: #008060;");
