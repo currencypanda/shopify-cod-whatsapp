@@ -12,6 +12,45 @@ import {
   I18N_DICTIONARIES,
   buildLocalizedOrderMessage,
 } from "./localization.server";
+import db from "../db.server";
+
+export interface WhatsAppCredentials {
+  phoneNumberId: string;
+  accessToken: string;
+  isCustomBrand: boolean;
+  brandName: string;
+}
+
+export async function getWhatsAppCredentialsForShop(
+  shop: string,
+): Promise<WhatsAppCredentials> {
+  try {
+    const config = await db.shopConfig.findUnique({ where: { shop } });
+
+    if (
+      config?.wabaStatus === "CONNECTED" &&
+      config?.phoneNumberId &&
+      config?.metaAccessToken
+    ) {
+      return {
+        phoneNumberId: config.phoneNumberId,
+        accessToken: config.metaAccessToken,
+        isCustomBrand: true,
+        brandName: config.brandDisplayName || shop,
+      };
+    }
+  } catch (err) {
+    console.warn(`[whatsapp] Error resolving credentials for shop ${shop}:`, err);
+  }
+
+  // Graceful fallback to managed platform gateway if configured
+  return {
+    phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || "fallback_phone_number_id",
+    accessToken: process.env.WHATSAPP_ACCESS_TOKEN || "fallback_access_token",
+    isCustomBrand: false,
+    brandName: shop,
+  };
+}
 
 export const WHATSAPP_GRAPH_API_VERSION = "v21.0";
 const WHATSAPP_GRAPH_API_BASE = `https://graph.facebook.com/${WHATSAPP_GRAPH_API_VERSION}`;

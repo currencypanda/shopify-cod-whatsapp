@@ -136,6 +136,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           failureReason: recentFailed.auditLog || "Delivery failure recorded",
         }
       : null,
+    wabaStatus: config.wabaStatus || "DISCONNECTED",
+    brandDisplayName: config.brandDisplayName || null,
+    metaBillingActive: config.metaBillingActive ?? false,
   };
 
   // 4. Autonomous Resolution
@@ -152,6 +155,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       monthlyUsageCount,
       orderLimit: plan.orderLimit,
       remainingQuota,
+      wabaStatus: config.wabaStatus || "DISCONNECTED",
+      brandDisplayName: config.brandDisplayName || null,
+      metaBillingActive: config.metaBillingActive ?? false,
     },
   });
 };

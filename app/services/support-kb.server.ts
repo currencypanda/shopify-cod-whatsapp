@@ -33,6 +33,9 @@ export interface StoreSupportContext {
     createdAt: string;
     failureReason?: string;
   } | null;
+  wabaStatus: string;
+  brandDisplayName?: string | null;
+  metaBillingActive: boolean;
 }
 
 export interface SupportResponse {
@@ -142,6 +145,45 @@ If a WhatsApp message fails to reach a customer, it is typically caused by one o
    • Ensure your store's **Default Country Code** (default: \`92\` for Pakistan, \`971\` for UAE, \`966\` for Saudi Arabia) matches your primary customer demographic in the settings sidebar.
     `.trim(),
   },
+
+  metaDirectBilling: {
+    title: "Meta Direct Message Billing ($0 App Markup)",
+    content: `
+### Meta Direct Message Billing & Conversation Charges
+
+SwiftCOD does NOT charge per-message markup or deduct message fees from your Shopify bill. Message fees are paid directly to Meta via the payment method attached to your WhatsApp Business Manager during the 1-click connection.
+
+• **Zero Developer Markup:** $0 app markup or transaction cuts. You only pay standard Meta wholesale rates.
+• **Transparent Wholesale Rates:** Meta charges standard utility conversation rates (e.g., ~$0.006–$0.01 in South Asia, ~$0.02 in GCC).
+• **24-Hour Free Window:** Customer responses and interactive conversational modifications (address changes, time slot selection) within Meta's 24-hour customer care window incur zero extra cost.
+    `.trim(),
+  },
+
+  brandIdentity: {
+    title: "Official Brand Identity & Sender Display",
+    content: `
+### 100% Native Brand Identity & Sender Display
+
+When you connect via Meta Embedded Signup:
+• **Verified Brand Display:** Your customers will see your exact official Brand Name, logo/profile photo, and verified WhatsApp badge on their phone.
+• **Dedicated Sender ID:** All messages are dispatched directly from your company's own WhatsApp Business Phone Number ID.
+• **Branded Templates:** All templates automatically feature your store name, product photo, and customized order details.
+    `.trim(),
+  },
+
+  embeddedSignup: {
+    title: "1-Click Meta Embedded Signup Guide",
+    content: `
+### 1-Click Meta Embedded Signup (Under 2 Minutes)
+
+Connecting your official WhatsApp brand line requires zero manual API tokens or Cloud console setup:
+1. **Step 1:** Click **[📲 Connect Official WhatsApp via Meta]** on your dashboard.
+2. **Step 2:** Log in to Facebook & select your business name and WhatsApp Business Account.
+3. **Step 3:** Add/confirm your Meta payment method for direct conversation billing.
+
+Setup takes under 2 minutes with zero API keys or manual tokens needed!
+    `.trim(),
+  },
 };
 
 /**
@@ -194,7 +236,64 @@ ${
     };
   }
 
-  // 2. Billing, Plans, 7-Day Trial & Deductions
+  // 2A. Direct Meta Message Billing & Wholesale Rates
+  if (
+    query.includes("message charge") ||
+    query.includes("whatsapp charge") ||
+    query.includes("how do whatsapp message charges work") ||
+    query.includes("per-message") ||
+    query.includes("per message") ||
+    query.includes("meta charge") ||
+    query.includes("conversation fee") ||
+    query.includes("markup")
+  ) {
+    const metaBillingNotice = `\n\n📌 **Your Store's Meta Billing Status:** ${
+      context.metaBillingActive
+        ? "✅ **Active (Direct to Business Card)**: Message fees bill directly to your business credit card on Meta with $0 SwiftCOD markup."
+        : "⚠️ **Direct Billing Pending:** Link your Meta Business Account via the top dashboard banner to enable direct wholesale conversation billing."
+    }`;
+
+    return {
+      reply: `${SUPPORT_KNOWLEDGE_BASE.metaDirectBilling.content}${metaBillingNotice}`,
+      category: "billing",
+      suggestedFollowups: [
+        "How do I connect my official WhatsApp Brand Name?",
+        "Check my current plan & quota status",
+        "Explain the 7-day trial and billing rollover",
+      ],
+    };
+  }
+
+  // 2B. Official Brand Name, Sender Identity & 1-Click Embedded Signup
+  if (
+    query.includes("brand name") ||
+    query.includes("official whatsapp") ||
+    query.includes("how do i connect my official whatsapp") ||
+    query.includes("embedded signup") ||
+    query.includes("connect whatsapp") ||
+    query.includes("sender identity") ||
+    query.includes("profile picture") ||
+    query.includes("profile photo") ||
+    query.includes("waba")
+  ) {
+    const channelNotice = `\n\n📌 **Your Current WhatsApp Channel:** ${
+      context.wabaStatus === "CONNECTED"
+        ? `✅ **Connected:** Sending from your official brand line **${context.brandDisplayName || context.shop}** with verified sender badge.`
+        : "⚠️ **Disconnected:** Operating on the managed fallback cloud gateway. Click **[📲 Connect Official WhatsApp via Meta]** in your dashboard to connect your official brand in 1 click."
+    }`;
+
+    return {
+      reply: `${SUPPORT_KNOWLEDGE_BASE.brandIdentity.content}\n\n${SUPPORT_KNOWLEDGE_BASE.embeddedSignup.content}${channelNotice}`,
+      category: "settings",
+      suggestedFollowups: [
+        "How do WhatsApp message charges work?",
+        "How does automatic inventory restock work?",
+        "Check my current plan & quota status",
+      ],
+    };
+  }
+
+  // 2C. Billing, Plans, 7-Day Trial & Deductions
   if (
     query.includes("billing") ||
     query.includes("pricing") ||
@@ -216,9 +315,9 @@ ${
       reply: `${SUPPORT_KNOWLEDGE_BASE.billing.content}${currentTierNotice}`,
       category: "billing",
       suggestedFollowups: [
+        "How do WhatsApp message charges work?",
+        "How do I connect my official WhatsApp Brand Name?",
         "Check my current plan & quota status",
-        "How do I cancel or downgrade?",
-        "How does automatic inventory restock work?",
       ],
     };
   }
@@ -365,6 +464,7 @@ Hello! I am your **SwiftCOD 24/7 AI Support Copilot**.
 I specialize in helping you automate Cash on Delivery verification, reduce RTO losses, and manage your store's verification workflows.
 
 I can assist you with:
+• **📲 Official Brand WhatsApp:** 1-Click Meta Embedded Signup, direct wholesale billing, and verified brand display.
 • **💳 Billing & Plans:** Free Starter, Growth Deal ($9.99), Enterprise ($24.99), and the 7-day trial rollover.
 • **⚡ Quota Inquiries:** Check your live monthly order usage and remaining verifications.
 • **🛍️ Inventory Restocking:** How cancelled orders are automatically restored via Shopify GraphQL.
@@ -378,10 +478,10 @@ Please select a quick question below or ask me anything related to your COD veri
     reply: fallbackReply,
     category: "general",
     suggestedFollowups: [
+      "How do I connect my official WhatsApp Brand Name?",
+      "How do WhatsApp message charges work?",
       "Check my current plan & quota status",
-      "Explain the 7-day trial and billing rollover",
       "How does automatic inventory restock work?",
-      "How do customers drop their GPS location pin?",
     ],
   };
 }

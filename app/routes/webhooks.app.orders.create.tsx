@@ -7,6 +7,7 @@ import {
   formatPhoneNumber,
   sendCodVerificationMessage,
   sendRichCodVerificationMessage,
+  getWhatsAppCredentialsForShop,
 } from "../services/whatsapp.server";
 import {
   resolveOrderContext,
@@ -320,8 +321,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     ].filter(Boolean);
     const shippingAddress = addressParts.length > 0 ? addressParts.join(", ") : null;
 
-    const phoneNumberId = config.whatsappPhoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID || null;
-    const accessToken = config.whatsappAccessToken || process.env.WHATSAPP_ACCESS_TOKEN || null;
+    const creds = await getWhatsAppCredentialsForShop(shop);
+    const phoneNumberId = creds.phoneNumberId;
+    const accessToken = creds.accessToken;
+    const storeDisplayName = creds.isCustomBrand ? creds.brandName : shop;
     const canSend = e164Phone !== null && !!phoneNumberId && !!accessToken;
 
     let verificationId: string;
@@ -364,7 +367,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     // Fire-and-forget: do not block the webhook response on Meta's API.
     void dispatchVerificationMessage({
       verificationId,
-      shop,
+      shop: storeDisplayName,
       phoneNumberId,
       accessToken,
       to: e164Phone,

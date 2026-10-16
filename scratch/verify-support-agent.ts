@@ -83,6 +83,9 @@ async function runTestSuite() {
       createdAt: new Date().toISOString(),
       failureReason: "Meta API code 131026: recipient not registered on WhatsApp",
     },
+    wabaStatus: "CONNECTED",
+    brandDisplayName: "Royal Heritage Brand",
+    metaBillingActive: true,
   };
 
   // -------------------------------------------------------------------------

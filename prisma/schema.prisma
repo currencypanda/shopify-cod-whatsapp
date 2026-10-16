@@ -53,6 +53,15 @@ model ShopConfig {
   botTone                    String?  @default("friendly")
   botLanguage                String?  @default("auto")
   subscriptionTier           String   @default("STARTER")
+
+  // Meta Embedded Signup / BYOK Credentials
+  wabaId                     String?  // WhatsApp Business Account ID
+  phoneNumberId              String?  // Dedicated Phone Number ID
+  metaAccessToken            String?  // Encrypted System User / Long-Lived Access Token
+  brandDisplayName           String?  // Verified Business Display Name on WhatsApp
+  wabaStatus                 String   @default("DISCONNECTED") // DISCONNECTED | PENDING_REVIEW | CONNECTED
+  metaBillingActive          Boolean  @default(false)          // Valid payment method on Meta
+
   createdAt                  DateTime @default(now())
   updatedAt                  DateTime @updatedAt
   verifications              VerificationOrder[]

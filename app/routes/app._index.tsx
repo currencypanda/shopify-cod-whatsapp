@@ -31,6 +31,7 @@ import {
   createAppSubscription,
 } from "../services/billing.server";
 import { MerchantSupportDrawer } from "../components/MerchantSupportDrawer";
+import { WhatsAppOnboardingCard } from "../components/WhatsAppOnboardingCard";
 
 // ---------------------------------------------------------------------------
 // Loader — Fetch SaaS metrics, verifications & zero-config shop settings
@@ -148,6 +149,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       botTone: config.botTone ?? "friendly",
       botLanguage: config.botLanguage ?? "auto",
       subscriptionTier: billingTier,
+      wabaId: config.wabaId ?? null,
+      phoneNumberId: config.phoneNumberId ?? null,
+      brandDisplayName: config.brandDisplayName ?? null,
+      wabaStatus: config.wabaStatus ?? "DISCONNECTED",
+      metaBillingActive: config.metaBillingActive ?? false,
+      metaAppId: process.env.META_APP_ID || "1234567890",
     },
     isSaaSManagedActive,
     metrics: {
@@ -463,6 +470,16 @@ export default function Index() {
     >
       <TitleBar title="COD WhatsApp Verification & RTO Protection" />
       <BlockStack gap="500">
+        {/* Meta Embedded Signup - Official WhatsApp Brand Channel */}
+        <WhatsAppOnboardingCard
+          wabaStatus={config.wabaStatus}
+          brandDisplayName={config.brandDisplayName}
+          phoneNumberId={config.phoneNumberId}
+          metaBillingActive={config.metaBillingActive}
+          metaAppId={config.metaAppId}
+          shop={config.shop}
+        />
+
         {/* Managed Cloud Infrastructure Reassurance Banner */}
         {isSaaSManagedActive ? (
           <Banner title="Managed Cloud Verification Active" tone="success">

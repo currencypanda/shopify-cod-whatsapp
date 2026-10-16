@@ -27,6 +27,16 @@ interface MerchantSupportDrawerProps {
 
 const QUICK_CHIPS = [
   {
+    icon: "📲",
+    label: "How do I connect my official WhatsApp Brand Name?",
+    query: "How do I connect my official WhatsApp Brand Name?",
+  },
+  {
+    icon: "💳",
+    label: "How do WhatsApp message charges work?",
+    query: "How do WhatsApp message charges work?",
+  },
+  {
     icon: "📌",
     label: "How does automatic inventory restock work?",
     query: "How does automatic inventory restock work?",
