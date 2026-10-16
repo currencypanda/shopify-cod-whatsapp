@@ -12,6 +12,9 @@ export const action = async (args: ActionFunctionArgs) => {
   try {
     return await redactAction(args);
   } catch (error: any) {
+    if (error instanceof Response) {
+      return new Response(error.statusText || "Unauthorized", { status: error.status === 400 ? 401 : error.status });
+    }
     console.warn(`[GDPR] customers-redact handled gracefully: ${error?.message || error}`);
     return new Response(JSON.stringify({ status: "acknowledged", notice: "Handled" }), {
       status: 200,

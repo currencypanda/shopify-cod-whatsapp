@@ -289,7 +289,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
     const activeTone = (config.botTone || "friendly") as BotTone;
     const activeCurrency = resolvedContext.currency;
-    const e164Phone = resolvedContext.normalizedPhone || (rawPhone ? formatPhoneNumber(rawPhone, countryCode) : null);
+    const e164Phone =
+      (rawPhone ? formatPhoneNumber(rawPhone, countryCode) : null) ||
+      (/^\+[1-9]\d{7,14}$/.test(resolvedContext.normalizedPhone)
+        ? formatPhoneNumber(resolvedContext.normalizedPhone, countryCode)
+        : null);
 
     const items: LineItemSummary[] = (order.line_items || []).map((li) => ({
       title: li.title || "Product",

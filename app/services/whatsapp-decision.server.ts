@@ -271,8 +271,16 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
     const { shopConfig } = verification;
     const locale = (verification.activeLocale || "en") as SupportedLocale;
     const dict = I18N_DICTIONARIES[locale] || I18N_DICTIONARIES.en;
-    const phoneNumberId = shopConfig.whatsappPhoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID || null;
-    const accessToken = shopConfig.whatsappAccessToken || process.env.WHATSAPP_ACCESS_TOKEN || null;
+    const phoneNumberId =
+      (shopConfig.wabaStatus === "CONNECTED" ? shopConfig.phoneNumberId : null) ||
+      shopConfig.whatsappPhoneNumberId ||
+      process.env.WHATSAPP_PHONE_NUMBER_ID ||
+      null;
+    const accessToken =
+      (shopConfig.wabaStatus === "CONNECTED" ? shopConfig.metaAccessToken : null) ||
+      shopConfig.whatsappAccessToken ||
+      process.env.WHATSAPP_ACCESS_TOKEN ||
+      null;
 
     let admin: any = null;
     let session: any = null;
@@ -547,8 +555,16 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
     const { shopConfig } = verification;
     const locale = (verification.activeLocale || "en") as SupportedLocale;
     const dict = I18N_DICTIONARIES[locale] || I18N_DICTIONARIES.en;
-    const phoneNumberId = shopConfig.whatsappPhoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID || null;
-    const accessToken = shopConfig.whatsappAccessToken || process.env.WHATSAPP_ACCESS_TOKEN || null;
+    const phoneNumberId =
+      (shopConfig.wabaStatus === "CONNECTED" ? shopConfig.phoneNumberId : null) ||
+      shopConfig.whatsappPhoneNumberId ||
+      process.env.WHATSAPP_PHONE_NUMBER_ID ||
+      null;
+    const accessToken =
+      (shopConfig.wabaStatus === "CONNECTED" ? shopConfig.metaAccessToken : null) ||
+      shopConfig.whatsappAccessToken ||
+      process.env.WHATSAPP_ACCESS_TOKEN ||
+      null;
 
     let admin: any = null;
     let session: any = null;
@@ -685,8 +701,16 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
     const { shopConfig } = verification;
     const locale = (verification.activeLocale || "en") as SupportedLocale;
     const dict = I18N_DICTIONARIES[locale] || I18N_DICTIONARIES.en;
-    const phoneNumberId = shopConfig.whatsappPhoneNumberId || process.env.WHATSAPP_PHONE_NUMBER_ID || null;
-    const accessToken = shopConfig.whatsappAccessToken || process.env.WHATSAPP_ACCESS_TOKEN || null;
+    const phoneNumberId =
+      (shopConfig.wabaStatus === "CONNECTED" ? shopConfig.phoneNumberId : null) ||
+      shopConfig.whatsappPhoneNumberId ||
+      process.env.WHATSAPP_PHONE_NUMBER_ID ||
+      null;
+    const accessToken =
+      (shopConfig.wabaStatus === "CONNECTED" ? shopConfig.metaAccessToken : null) ||
+      shopConfig.whatsappAccessToken ||
+      process.env.WHATSAPP_ACCESS_TOKEN ||
+      null;
 
     let admin: any = null;
     let session: any = null;
@@ -696,13 +720,18 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
       console.warn(`[whatsapp] Admin session error: ${err.message}`);
     }
 
+    const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
     await db.verificationOrder.update({
       where: { id: verification.id },
       data: {
         locationLat: latitude,
         locationLng: longitude,
         status: VerificationStatus.PENDING_VERIFICATION,
-        auditLog: appendAudit(verification.auditLog, `GPS location pin recorded: (${latitude}, ${longitude})`),
+        auditLog: appendAudit(
+          verification.auditLog,
+          `GPS location pin recorded: (${latitude}, ${longitude}) -> ${googleMapsUrl}`,
+        ),
       },
     });
 
@@ -711,9 +740,11 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
         await appendOrderVerificationNote(
           admin,
           verification.shopifyOrderId,
-          `[Customer GPS Pin: https://maps.google.com/?q=${latitude},${longitude}]`,
+          `[Customer GPS Pin: ${googleMapsUrl}]`,
         );
-        await addOrderTags(admin, verification.shopifyOrderId, ["COD-Address-Modified"]);
+        await addOrderTags(admin, verification.shopifyOrderId, [
+          shopConfig.autoTagAddressModified || "COD-Address-Modified",
+        ]);
       } catch (locErr: any) {
         console.error(`[shopify-orders] GPS note append failed: ${locErr.message}`);
       }

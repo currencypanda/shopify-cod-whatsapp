@@ -101,10 +101,11 @@ export function normalizePhoneNumber(rawPhone: string, defaultCountry: string = 
   }
 
   const digits = cleaned.replace(/\D/g, "");
-  if (digits.startsWith("00")) return `+${digits.slice(2)}`;
-  if (digits.startsWith("+")) return `+${digits.slice(1)}`;
-  if (!cleaned.startsWith("+") && digits.length >= 10) return `+${digits}`;
-  return cleaned;
+  if (digits.length < 8 || digits.length > 15) return "";
+  if (digits.startsWith("00") && digits.length >= 10) return `+${digits.slice(2)}`;
+  if (cleaned.startsWith("+") && digits.length >= 8) return `+${digits}`;
+  if (digits.length >= 10) return `+${digits}`;
+  return "";
 }
 
 /**

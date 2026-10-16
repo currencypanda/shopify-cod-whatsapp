@@ -87,7 +87,7 @@ export type VerificationActionType =
   | "SLOT_EVENING";
 
 const ACTION_ID_REGEX =
-  /^(CONFIRM(?:_ORDER)?|CANCEL(?:_ORDER)?|MANAGE(?:_ORDER)?|EDIT_ADDRESS|EDIT_ITEMS|SELECT_TIME_SLOT|SLOT_MORNING|SLOT_EVENING):([A-Za-z0-9-_:\/.]{1,200})$/i;
+  /^(CONFIRM(?:_ORDER)?|CANCEL(?:_ORDER)?|MANAGE(?:_ORDER)?|MODIFY(?:_ADDRESS|_ORDER)?|EDIT_ADDRESS|EDIT_ITEMS|SELECT_TIME_SLOT|SLOT_MORNING|SLOT_EVENING)[:_]([A-Za-z0-9-_:\/.]{1,200})$/i;
 
 /** Builds the action id sent to WhatsApp, e.g. `CONFIRM:<verificationId>` or `EDIT_ADDRESS:<verificationId>`. */
 export function buildActionId(
@@ -115,7 +115,7 @@ export function parseInteractiveAction(
     action = "CANCEL";
   } else if (upper.startsWith("MANAGE")) {
     action = "MANAGE_ORDER";
-  } else if (upper === "EDIT_ADDRESS") {
+  } else if (upper === "EDIT_ADDRESS" || upper.startsWith("MODIFY")) {
     action = "EDIT_ADDRESS";
   } else if (upper === "EDIT_ITEMS") {
     action = "EDIT_ITEMS";
