@@ -699,8 +699,8 @@ export async function sendRichCodVerificationMessage(
       title: dict.buttons.confirm.slice(0, 20),
     },
     {
-      id: buildActionId("MANAGE_ORDER", params.verificationId),
-      title: dict.buttons.manage.slice(0, 20),
+      id: buildActionId("EDIT_ADDRESS", params.verificationId),
+      title: dict.buttons.editAddress.slice(0, 20),
     },
     {
       id: buildActionId("CANCEL", params.verificationId),

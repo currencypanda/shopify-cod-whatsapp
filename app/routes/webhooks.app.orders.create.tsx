@@ -347,6 +347,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           shippingAddress,
           productImageUrl,
           status: canSend ? VerificationStatus.PENDING_VERIFICATION : VerificationStatus.FAILED,
+          auditLog: canSend
+            ? `[${new Date().toISOString()}] Order ingested for WhatsApp verification`
+            : `[${new Date().toISOString()}] FAILED: ${e164Phone ? "MISSING_WHATSAPP_CREDENTIALS" : "INVALID_PHONE_FORMAT"}`,
         },
         select: { id: true },
       });

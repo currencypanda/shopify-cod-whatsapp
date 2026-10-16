@@ -86,26 +86,41 @@ export function formatCurrency(amount: number | string, currency: string = "USD"
 /**
  * Normalizes customer phone numbers to international E.164 standard using libphonenumber-js.
  */
-export function normalizePhoneNumber(rawPhone: string, defaultCountry: string = "PK"): string {
-  if (!rawPhone) return "";
+export function normalizePhoneNumber(rawPhone: string, defaultCountry: string = "PK"): string | null {
+  if (!rawPhone || typeof rawPhone !== "string") return null;
   const cleaned = rawPhone.trim();
+  if (!cleaned) return null;
   const safeDefault = (defaultCountry || "PK").toUpperCase().slice(0, 2) as CountryCode;
 
+  let e164: string | null = null;
   try {
     const parsed = parsePhoneNumber(cleaned, safeDefault);
     if (parsed && parsed.isValid()) {
-      return parsed.format("E.164");
+      e164 = parsed.format("E.164");
     }
   } catch {
     // If libphonenumber fails, apply sensible digits-only fallback
   }
 
-  const digits = cleaned.replace(/\D/g, "");
-  if (digits.length < 8 || digits.length > 15) return "";
-  if (digits.startsWith("00") && digits.length >= 10) return `+${digits.slice(2)}`;
-  if (cleaned.startsWith("+") && digits.length >= 8) return `+${digits}`;
-  if (digits.length >= 10) return `+${digits}`;
-  return "";
+  if (!e164) {
+    const digits = cleaned.replace(/\D/g, "");
+    if (digits.length < 8 || digits.length > 15) return null;
+    if (digits.startsWith("00") && digits.length >= 10) e164 = `+${digits.slice(2)}`;
+    else if (cleaned.startsWith("+") && digits.length >= 8) e164 = `+${digits}`;
+    else if (digits.startsWith("0") && safeDefault === "PK" && digits.length === 11) e164 = `+92${digits.slice(1)}`;
+    else if (digits.startsWith("0") && safeDefault === "AE" && digits.length === 10) e164 = `+971${digits.slice(1)}`;
+    else if (digits.startsWith("0") && safeDefault === "SA" && digits.length === 10) e164 = `+966${digits.slice(1)}`;
+    else if (digits.length >= 10) e164 = `+${digits}`;
+  }
+
+  if (!e164 || !/^\+[1-9]\d{7,14}$/.test(e164)) return null;
+
+  // Enforce mobile-only validation for WhatsApp routing (reject landlines like 042-35761999)
+  if (e164.startsWith("+92") && !/^\+923\d{9}$/.test(e164)) return null;
+  if (e164.startsWith("+971") && !/^\+9715\d{8}$/.test(e164)) return null;
+  if (e164.startsWith("+966") && !/^\+9665\d{8}$/.test(e164)) return null;
+
+  return e164;
 }
 
 /**
@@ -126,7 +141,7 @@ export function resolveOrderContext(input: OrderInputPayload): LocalizedOrderCon
   const locale = resolveLocale(countryCode, input.customerLocale);
   const currency = (input.presentmentCurrency || input.currency || (locale === "ur" ? "PKR" : "USD")).toUpperCase().trim();
   const formattedAmount = formatCurrency(input.totalPrice ?? 0, currency, locale);
-  const normalizedPhone = normalizePhoneNumber(input.customerPhone || "", countryCode);
+  const normalizedPhone = normalizePhoneNumber(input.customerPhone || "", countryCode) || "";
 
   return {
     locale,

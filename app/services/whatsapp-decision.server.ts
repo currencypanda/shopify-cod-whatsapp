@@ -233,10 +233,17 @@ export function extractInboundMessages(body: MetaWebhookBody): UnifiedInboundMes
   return list;
 }
 
+export interface InboundHandlingResult {
+  alreadyProcessed: boolean;
+  status?: VerificationStatus;
+}
+
 /**
  * Enterprise Conversational State Machine for WhatsApp Inbound Events.
  */
-export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage): Promise<void> {
+export async function handleUnifiedInboundMessage(
+  message: UnifiedInboundMessage,
+): Promise<InboundHandlingResult> {
   // -------------------------------------------------------------------------
   // Case A: Interactive Action Selection (Button or List reply)
   // -------------------------------------------------------------------------
@@ -244,7 +251,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
     const parsed = parseInteractiveAction(message.actionId);
     if (!parsed) {
       console.log(`[whatsapp] Ignoring unrecognised action id "${message.actionId}"`);
-      return;
+      return { alreadyProcessed: false };
     }
     const { action, verificationId } = parsed;
 
@@ -265,7 +272,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
     }
     if (!verification) {
       console.warn(`[whatsapp] Verification ${verificationId} not found`);
-      return;
+      return { alreadyProcessed: false };
     }
 
     const { shopConfig } = verification;
@@ -302,7 +309,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
       });
       if (count === 0) {
         console.log(`[whatsapp] Verification ${verification.id} already resolved; ignoring CONFIRM`);
-        return;
+        return { alreadyProcessed: true };
       }
 
       if (admin) {
@@ -332,7 +339,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
           console.warn(`[whatsapp] Failed to send confirmation text: ${msgErr.message}`);
         }
       }
-      return;
+      return { alreadyProcessed: false, status: VerificationStatus.CONFIRMED };
     }
 
     // 2. Cancel Order
@@ -347,7 +354,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
       });
       if (count === 0) {
         console.log(`[whatsapp] Verification ${verification.id} already resolved; ignoring CANCEL`);
-        return;
+        return { alreadyProcessed: true };
       }
 
       if (admin) {
@@ -387,7 +394,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
           console.warn(`[whatsapp] Failed to send cancel text: ${msgErr.message}`);
         }
       }
-      return;
+      return { alreadyProcessed: false, status: VerificationStatus.CANCELLED };
     }
 
     // 3. Manage Order Menu
@@ -406,7 +413,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
           console.warn(`[whatsapp] Failed to send management menu: ${menuErr.message}`);
         }
       }
-      return;
+      return { alreadyProcessed: false };
     }
 
     // 4. Request Edit Address
@@ -431,7 +438,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
           console.warn(`[whatsapp] Failed to send address prompt: ${err.message}`);
         }
       }
-      return;
+      return { alreadyProcessed: false, status: VerificationStatus.AWAITING_ADDRESS_INPUT };
     }
 
     // 5. Request Edit Items
@@ -456,7 +463,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
           console.warn(`[whatsapp] Failed to send item edit prompt: ${err.message}`);
         }
       }
-      return;
+      return { alreadyProcessed: false, status: VerificationStatus.AWAITING_ITEM_MODIFICATION };
     }
 
     // 6. Request Time Slot Selection
@@ -482,7 +489,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
           console.warn(`[whatsapp] Failed to send slot picker: ${err.message}`);
         }
       }
-      return;
+      return { alreadyProcessed: false, status: VerificationStatus.AWAITING_SLOT_SELECTION };
     }
 
     // 7. Time Slot Chosen (Morning or Evening)
@@ -529,7 +536,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
           console.warn(`[whatsapp] Failed to send slot confirmation message: ${msgErr.message}`);
         }
       }
-      return;
+      return { alreadyProcessed: false, status: VerificationStatus.PENDING_VERIFICATION };
     }
   }
 
@@ -549,7 +556,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
 
     if (!verification) {
       console.log(`[whatsapp] No active verification awaiting input for sender ${message.from}`);
-      return;
+      return { alreadyProcessed: false };
     }
 
     const { shopConfig } = verification;
@@ -624,7 +631,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
           console.warn(`[whatsapp] Failed to send address update preview: ${msgErr.message}`);
         }
       }
-      return;
+      return { alreadyProcessed: false, status: VerificationStatus.PENDING_VERIFICATION };
     }
 
     // B2: Item modification text input
@@ -674,7 +681,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
           console.warn(`[whatsapp] Failed to send item update confirmation: ${msgErr.message}`);
         }
       }
-      return;
+      return { alreadyProcessed: false, status: VerificationStatus.PENDING_VERIFICATION };
     }
   }
 
@@ -694,7 +701,7 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
 
     if (!verification) {
       console.log(`[whatsapp] No active verification for GPS pin from ${message.from}`);
-      return;
+      return { alreadyProcessed: false };
     }
 
     const { latitude, longitude } = message.location;
@@ -772,12 +779,15 @@ export async function handleUnifiedInboundMessage(message: UnifiedInboundMessage
         console.warn(`[whatsapp] Failed to send location confirmation message: ${msgErr.message}`);
       }
     }
+    return { alreadyProcessed: false, status: VerificationStatus.PENDING_VERIFICATION };
   }
+
+  return { alreadyProcessed: false };
 }
 
 /** Legacy adapter for ButtonReply */
-export async function handleButtonReply(reply: ButtonReply): Promise<void> {
-  await handleUnifiedInboundMessage({
+export async function handleButtonReply(reply: ButtonReply): Promise<InboundHandlingResult> {
+  return await handleUnifiedInboundMessage({
     inboundMessageId: reply.inboundMessageId,
     from: reply.from,
     phoneNumberId: reply.phoneNumberId,
